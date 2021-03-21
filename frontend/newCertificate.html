@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create new certificate</title>
+    <style>
+        .container { 
+            position: relative; 
+        }
+
+        .center {
+            margin: 0;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            -ms-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+        }
+        input, select {
+            margin: 1em;
+            width: 150px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <form class="container center">
+        <table>
+            <tr>
+                <td><label for="parent">Type: </label></td>
+                <td>
+                    <select id="type">
+                        <option value="" selected>-</option>
+                        <option value="ROOT">Root</option>
+                        <option value="INTERMEDIATE">Intermediate</option>
+                        <option value="END">End entity</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="parent">Parent: </label></td>
+                <td><select id="parent" name="parent"></select></td>
+            </tr>
+            <tr>
+                <td><label for="start-date">Start date: </label></td>
+                <td><input id="start-date" type="date"></td>
+            </tr>
+            <tr>
+                <td><label for="end-date">End date: </label></td>
+                <td><input id="end-date" type="date"></td>
+            </tr>
+            <tr>
+                <td><label for="common-name">Common name: </label></td>
+                <td><input type="text" id="common-name" name="common-name"></td>
+            </tr>
+            <tr>
+                <td><label for="alt-name">Alternative name: </label></td>
+                <td><input type="text" id="alt-name" name="alt-name"></td>
+            </tr>
+            <tr style="text-align: center;">
+                <td colspan="2" ><input type="submit" value="Create"></td>
+            </tr>
+        
+        </table>
+            
+    </form>
+</body>
+</html>
