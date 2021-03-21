@@ -1,5 +1,7 @@
 package rs.ac.uns.ftn.e2.onee2team.security.pki.controller;
 
+import java.util.Collection;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +11,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +22,7 @@ import rs.ac.uns.ftn.e2.onee2team.security.pki.auth.TokenUtils;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.auth.UserTokenState;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.User;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.UserType;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.service.IUserService;
 
 
 @RestController
@@ -30,6 +34,9 @@ public class AuthenticationController {
 
 	@Autowired
 	private AuthenticationManager authenticationManager;
+	
+	@Autowired
+	private IUserService userService;
 	
 	@PostMapping("/login") 
 	public ResponseEntity<UserTokenState> createAuthenticationToken(@RequestBody JwtAuthenticationRequest authenticationRequest,
@@ -47,10 +54,15 @@ public class AuthenticationController {
 		User user = (User) authentication.getPrincipal();
 		String jwt = tokenUtils.generateToken(user.getEmail());
 		long expiresIn = tokenUtils.getExpiredIn();
-		UserType userType = user.getType();
+		UserType userType = user.getUserType();
 		String email = user.getEmail();
 
 		// Vrati token kao odgovor na uspesnu autentifikaciju
 		return ResponseEntity.ok(new UserTokenState(jwt, expiresIn, userType, email));
+	}
+	
+	@GetMapping("/all")
+	public Collection<User> getAll(){
+		return userService.getAll();
 	}
 }

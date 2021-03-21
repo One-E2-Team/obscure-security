@@ -5,6 +5,8 @@ import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.DiscriminatorType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -25,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Table(name = "all_users")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
 public abstract class User implements UserDetails {
 	
 	/**
@@ -43,8 +46,8 @@ public abstract class User implements UserDetails {
 	@Column(name = "password", nullable = false)
 	private String password;
 	
-	@Column(name = "type", nullable = false)
-	private UserType type;
+	@Column(name = "userType", nullable = false)
+	private UserType userType;
 	
 	@Column(name = "country", nullable = false)
 	private String country;
@@ -93,12 +96,12 @@ public abstract class User implements UserDetails {
 		this.password = password;
 	}
 
-	public UserType getType() {
-		return type;
+	public UserType getUserType() {
+		return userType;
 	}
 
-	public void setType(UserType type) {
-		this.type = type;
+	public void setType(UserType userType) {
+		this.userType = userType;
 	}
 
 	public String getCountry() {
