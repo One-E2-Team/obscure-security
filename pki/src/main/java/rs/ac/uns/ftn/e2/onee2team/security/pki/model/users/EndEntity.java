@@ -11,6 +11,10 @@ import rs.ac.uns.ftn.e2.onee2team.security.pki.model.Certificate;
 @Entity
 public class EndEntity extends User{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	@OneToMany(cascade = CascadeType.ALL)
 	private List<Certificate> certificates;
 
