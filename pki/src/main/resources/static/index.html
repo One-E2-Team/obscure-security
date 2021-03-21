@@ -5,10 +5,6 @@
             .container { 
             position: relative; 
             }
-
-            body{
-                background-image: url('bg-login.jpg');
-            }
             .center {
                 margin: 0;
                 position: absolute;
@@ -23,9 +19,23 @@
                 margin-left: 10px;
             }
         </style>
+        <script>
+            function login(){
+                let xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        alert("yay" + this.response)
+                    }
+                };
+                xhttp.open("POST", "/api/auth/login", true);
+                xhttp.setRequestHeader("Content-type", "application/json");
+                data = {email: document.getElementById("username").value, password: document.getElementById("password").value}
+                xhttp.send(JSON.stringify(data));
+            }
+        </script>
     </head>
     <body>
-        <form class="container center">
+        <div class="container center">
             <table>
                 <tr>
                     <td><label for="username">Username: </label></td>
@@ -36,11 +46,11 @@
                     <td><input type="password" name="password" id="password"/></td>
                 </tr>
                 <tr>
-                    <td colspan="2" style="text-align: center;"><input type="submit" value="login" /></td>
+                    <td colspan="2" style="text-align: center;"><input type="button" onclick="login()" value="login" /></td>
                 </tr>
             </table>
             
-        </form>
+        </div>
     </body>
     
 </html>
