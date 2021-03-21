@@ -3,10 +3,12 @@ package rs.ac.uns.ftn.e2.onee2team.security.pki.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
 
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.User;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.repository.IUserRepository;
 
+@Service
 public class UserService implements IUserService {
 
 	private IUserRepository userRepository;
@@ -26,4 +28,8 @@ public class UserService implements IUserService {
 		}
 	}
 
+	@Override
+	public User findByEmail(String email) {
+		return userRepository.findByEmail(email);
+	}
 }
