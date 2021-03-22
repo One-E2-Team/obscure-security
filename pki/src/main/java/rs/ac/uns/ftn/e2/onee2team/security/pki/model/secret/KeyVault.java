@@ -2,6 +2,7 @@ package rs.ac.uns.ftn.e2.onee2team.security.pki.model.secret;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -26,6 +27,9 @@ public class KeyVault {
 	
 	@Column(name = "publicKey", nullable = false, unique = true)
 	private PublicKey publicKey;
+	
+	@Column(name = "endDate", nullable = false)
+	private Date validUntil;
 
 	public Long getId() {
 		return id;
@@ -49,6 +53,14 @@ public class KeyVault {
 
 	public void setPublicKey(PublicKey publicKey) {
 		this.publicKey = publicKey;
+	}
+
+	public Date getValidUntil() {
+		return validUntil;
+	}
+
+	public void setValidUntil(Date validUntil) {
+		this.validUntil = validUntil;
 	}
 
 }

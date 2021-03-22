@@ -29,7 +29,6 @@ public class PrivateKeyConverter implements AttributeConverter<PrivateKey, Strin
 			e1.printStackTrace();
 		}
 		System.out.println("IV: " + Base64Utility.encode(AES.generateIv().getIV()));*/
-		System.out.println("kurcobol");
 		try {
 			key = new SecretKeySpec(Base64Utility.decode(System.getenv("FTN_SECURITY_AES_SHARED_KEY")), "AES");
 		} catch (IOException e) {
@@ -40,7 +39,6 @@ public class PrivateKeyConverter implements AttributeConverter<PrivateKey, Strin
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		System.out.println("kurcobol2");
 	}
 	
 	@Override
