@@ -24,7 +24,8 @@
                 let xhttp = new XMLHttpRequest();
                 xhttp.onreadystatechange = function() {
                     if (this.readyState == 4 && this.status == 200) {
-                        alert("yay" + this.response)
+                        sessionStorage.setItem("JWT", JSON.stringify(JSON.parse(this.response)));
+                        window.location.href = '/certificates.html'
                     }
                 };
                 xhttp.open("POST", "/api/auth/login", true);
@@ -49,7 +50,7 @@
                     <td><input type="password" name="password" id="password"/></td>
                 </tr>
                 <tr>
-                    <td colspan="2" style="text-align: center;"><input type="button" onclick="alert(1);login()" value="login" /></td>
+                    <td colspan="2" style="text-align: center;"><input type="button" onclick="login()" value="login" /></td>
                 </tr>
             </table>
             
