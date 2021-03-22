@@ -1,6 +1,10 @@
 package rs.ac.uns.ftn.e2.onee2team.security.pki.model.secret;
 
+import java.security.PrivateKey;
+import java.security.PublicKey;
+
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -17,10 +21,11 @@ public class KeyVault {
 	private Long id;
 	
 	@Column(name = "privateKey", nullable = false, unique = true)
-	private String privateKey;
+	@Convert(converter = PrivateKeyConverter.class)
+	private PrivateKey privateKey;
 	
 	@Column(name = "publicKey", nullable = false, unique = true)
-	private String publicKey;
+	private PublicKey publicKey;
 
 	public Long getId() {
 		return id;
@@ -30,19 +35,20 @@ public class KeyVault {
 		this.id = id;
 	}
 
-	public String getPrivateKey() {
+	public PrivateKey getPrivateKey() {
 		return privateKey;
 	}
 
-	public void setPrivateKey(String privateKey) {
+	public void setPrivateKey(PrivateKey privateKey) {
 		this.privateKey = privateKey;
 	}
 
-	public String getPublicKey() {
+	public PublicKey getPublicKey() {
 		return publicKey;
 	}
 
-	public void setPublicKey(String publicKey) {
+	public void setPublicKey(PublicKey publicKey) {
 		this.publicKey = publicKey;
 	}
+
 }
