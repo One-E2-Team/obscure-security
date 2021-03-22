@@ -1,12 +1,17 @@
-package rs.ac.uns.ftn.e2.onee2team.security.pki.model;
+package rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate;
 
 import java.util.Date;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -30,17 +35,58 @@ public class Certificate {
 	@Column(name = "publicKey", nullable = false, unique = true)
 	private String publicKey;
 	
-	@Column(name = "commonName", nullable = false, unique = true)
-	private String commonName;
-	
-	@Column(name = "alternativeName", nullable = false)
-	private String alternativeName;
+	@ManyToOne(optional = false, cascade = CascadeType.ALL)
+	@JoinColumn(name = "subject_id")
+	private CertificateSubject subject;
+
+	@ManyToOne(optional = false, cascade = CascadeType.ALL)
+	@JoinColumn(name = "issuer_id")
+	private CertificateSubject issuer;
 	
 	@Column(name = "type", nullable = false)
 	private CertificateType type;
 	
 	@Column(name = "revoked", nullable = false)
 	private Boolean revoked;
+	
+	@Column(name = "signature", length = 1024, nullable = false)
+	private String signature;
+
+	@ManyToMany(cascade = CascadeType.ALL)
+	@JoinColumn(name = "extensions")
+	private List<CertificateExtension> extensions;
+	
+	public String getSignature() {
+		return signature;
+	}
+
+	public void setSignature(String signature) {
+		this.signature = signature;
+	}
+
+	public CertificateSubject getSubject() {
+		return subject;
+	}
+
+	public void setSubject(CertificateSubject subject) {
+		this.subject = subject;
+	}
+
+	public CertificateSubject getIssuer() {
+		return issuer;
+	}
+
+	public void setIssuer(CertificateSubject issuer) {
+		this.issuer = issuer;
+	}
+
+	public List<CertificateExtension> getExtensions() {
+		return extensions;
+	}
+
+	public void setExtensions(List<CertificateExtension> extensions) {
+		this.extensions = extensions;
+	}
 
 	public Long getId() {
 		return id;
@@ -80,22 +126,6 @@ public class Certificate {
 
 	public void setPublicKey(String publicKey) {
 		this.publicKey = publicKey;
-	}
-
-	public String getCommonName() {
-		return commonName;
-	}
-
-	public void setCommonName(String commonName) {
-		this.commonName = commonName;
-	}
-
-	public String getAlternativeName() {
-		return alternativeName;
-	}
-
-	public void setAlternativeName(String alternativeName) {
-		this.alternativeName = alternativeName;
 	}
 
 	public CertificateType getType() {

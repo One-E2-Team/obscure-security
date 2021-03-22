@@ -17,12 +17,15 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.UserDefinedSubject;
 
 @Entity
 @Table(name = "all_users")
@@ -49,20 +52,9 @@ public abstract class User implements UserDetails {
 	@Column(name = "userType", nullable = false)
 	private UserType userType;
 	
-	@Column(name = "country", nullable = false)
-	private String country;
-	
-	@Column(name = "state", nullable = false)
-	private String state;
-	
-	@Column(name = "locality", nullable = false)
-	private String locality;
-	
-	@Column(name = "organization", nullable = false)
-	private String organization;
-	
-	@Column(name = "organizationalUnit", nullable = false)
-	private String organizationalUnit;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "userSubject_id", referencedColumnName = "id")
+	private UserDefinedSubject userSubject;
 	
 	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	@JoinTable(name = "user_authority", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "authority_id", referencedColumnName = "id"))
@@ -103,50 +95,10 @@ public abstract class User implements UserDetails {
 	public void setType(UserType userType) {
 		this.userType = userType;
 	}
-
-	public String getCountry() {
-		return country;
-	}
-
-	public void setCountry(String country) {
-		this.country = country;
-	}
-
-	public String getState() {
-		return state;
-	}
-
-	public void setState(String state) {
-		this.state = state;
-	}
-
-	public String getLocality() {
-		return locality;
-	}
 	
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		return this.authorities;
-	}
-
-	public void setLocality(String locality) {
-		this.locality = locality;
-	}
-
-	public String getOrganization() {
-		return organization;
-	}
-
-	public void setOrganization(String organization) {
-		this.organization = organization;
-	}
-
-	public String getOrganizationalUnit() {
-		return organizationalUnit;
-	}
-
-	public void setOrganizationalUnit(String organizationalUnit) {
-		this.organizationalUnit = organizationalUnit;
 	}
 	
 	@JsonIgnore

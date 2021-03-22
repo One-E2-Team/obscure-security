@@ -7,7 +7,7 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 
-import rs.ac.uns.ftn.e2.onee2team.security.pki.model.Certificate;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.Certificate;
 
 @Entity
 @DiscriminatorValue("END_ENTITY")
@@ -17,6 +17,7 @@ public class EndEntity extends User{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
 	@OneToMany(cascade = CascadeType.ALL)
 	private List<Certificate> certificates;
 

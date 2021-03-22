@@ -1,4 +1,4 @@
-package rs.ac.uns.ftn.e2.onee2team.security.pki.model;
+package rs.ac.uns.ftn.e2.onee2team.security.pki.model.secret;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -8,7 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "keyVault")
+@Table(name = "key_vault")
 public class KeyVault {
 	
 	@Id

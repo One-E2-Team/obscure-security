@@ -20,7 +20,7 @@
             }
         </style>
         <script>
-            function login(){
+            async function login(){
                 let xhttp = new XMLHttpRequest();
                 xhttp.onreadystatechange = function() {
                     if (this.readyState == 4 && this.status == 200) {
@@ -29,7 +29,10 @@
                 };
                 xhttp.open("POST", "/api/auth/login", true);
                 xhttp.setRequestHeader("Content-type", "application/json");
-                data = {email: document.getElementById("username").value, password: document.getElementById("password").value}
+                let encoder = new TextEncoder();
+                let hash = await window.crypto.subtle.digest('SHA-512', encoder.encode(document.getElementById("password").value));
+                let hexPass = (Array.from(new Uint8Array(hash))).map(b => b.toString(16).padStart(2, '0')).join('');
+                let data = {email: document.getElementById("username").value, password: hexPass};
                 xhttp.send(JSON.stringify(data));
             }
         </script>
@@ -46,7 +49,7 @@
                     <td><input type="password" name="password" id="password"/></td>
                 </tr>
                 <tr>
-                    <td colspan="2" style="text-align: center;"><input type="button" onclick="login()" value="login" /></td>
+                    <td colspan="2" style="text-align: center;"><input type="button" onclick="alert(1);login()" value="login" /></td>
                 </tr>
             </table>
             
