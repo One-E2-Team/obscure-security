@@ -1,10 +1,12 @@
 package rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate;
 
+import java.security.PublicKey;
 import java.util.Date;
 import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -13,6 +15,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import rs.ac.uns.ftn.e2.onee2team.security.pki.model.secret.PublicKeyConverter;
 
 @Entity
 @Table(name = "certificates")
@@ -32,8 +36,9 @@ public class Certificate {
 	@Column(name = "endDate", nullable = false)
 	private Date endDate;
 	
-	@Column(name = "publicKey", nullable = false, unique = true)
-	private String publicKey;
+	@Column(name = "publicKey", length = 2705, nullable = false, unique = true)
+	@Convert(converter = PublicKeyConverter.class)
+	private PublicKey publicKey;
 	
 	@ManyToOne(optional = false, cascade = CascadeType.ALL)
 	@JoinColumn(name = "subject_id")
@@ -120,11 +125,11 @@ public class Certificate {
 		this.endDate = endDate;
 	}
 
-	public String getPublicKey() {
+	public PublicKey getPublicKey() {
 		return publicKey;
 	}
 
-	public void setPublicKey(String publicKey) {
+	public void setPublicKey(PublicKey publicKey) {
 		this.publicKey = publicKey;
 	}
 
