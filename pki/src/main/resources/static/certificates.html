@@ -1,52 +1,60 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <style>
-        table, th, td {border: 1px solid black;}
-        .container { 
-            position: relative; 
+        table,
+        th,
+        td {
+            border: 1px solid black;
         }
+        
+        .container {
+            position: relative;
+        }
+        
         .center {
-            margin:0;
+            margin: 0;
             position: absolute;
             left: 50%;
             transform: translate(-50%, 0);
             margin-top: 2em;
         }
+        
+        textarea {
+            overflow-y: scroll;
+            height: 50px;
+            width: 200px;
+            resize: none;
+        }
     </style>
+    <script src="certificates.js"></script>
     <meta charset='utf-8'>
     <title>Certificates</title>
 </head>
+
 <body>
     <div style="text-align: center;">
         <a href="newCertificate.html">Add new</a>
     </div>
-    <table class="center conatiner">
-        <thead>
-            <th>Serial number</th>
-            <th>Start date</th>
-            <th>End date</th>
-            <th>Public key</th>
-            <th>Common name</th>            
-            <th>Organization</th>
-            <th>Organizational unit</th>
-            <th>Alternative name</th>
-            <th>Type</th>
-            <th>Revoked</th>
-        </thead>
-        <tr>
-            <td>Serial number</td>
-            <td>Start date</td>
-            <td>End date</td>
-            <td>Public key</td>
-            <td>Common name</td>            
-            <td>Organization</td>
-            <td>Organizational unit</td>
-            <td>Alternative name</td>
-            <td>Type</td>
-            <td>Revoked</td>
-        </tr>
-    </table>
-    
+    <div class="center conatiner">
+        <table id="certificates-table">
+            <thead>
+                <th>Serial number</th>
+                <th>Start date</th>
+                <th>End date</th>
+                <th>Public key</th>
+                <th>Common name</th>
+                <th>Organization</th>
+                <th>Organizational unit</th>
+                <th>Extension field</th>
+                <th>Extension value</th>
+                <th>Type</th>
+                <th>Revoked</th>
+            </thead>
+            <tr></tr>
+        </table>
+    </div>
 </body>
+
 </html>
