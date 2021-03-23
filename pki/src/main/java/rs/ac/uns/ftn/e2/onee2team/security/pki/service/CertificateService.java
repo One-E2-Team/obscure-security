@@ -28,7 +28,6 @@ public class CertificateService implements ICertificateService {
 
 	@Override
 	public void revoke(Long serialNumber) {
-		System.out.println(certificateRepository.findAll());
 		Certificate cert = certificateRepository.findBySerialNumber(serialNumber);
 		if (cert.getRevoked())
 			return;
