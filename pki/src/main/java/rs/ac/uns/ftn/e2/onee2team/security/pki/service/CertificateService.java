@@ -22,11 +22,13 @@ public class CertificateService implements ICertificateService {
 		Certificate cert = certificateRepository.findBySerialNumber(serialNumber);
 		if (cert.getRevoked())
 			return;
-		if (cert.getType().equals(CertificateType.END)){
-			cert.setRevoked(true);
-			certificateRepository.save(cert);
+		
+		cert.setRevoked(true);
+		certificateRepository.save(cert);
+		
+		if (cert.getType().equals(CertificateType.END))
 			return;
-		}
+		
 		revokeChildren(cert.getSubject().getId());
 	}
 	

@@ -2,9 +2,10 @@ package rs.ac.uns.ftn.e2.onee2team.security.pki.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.service.ICertificateService;
 
@@ -19,8 +20,9 @@ public class CertificateController {
 		this.certificateService = certificateService;
 	}
 	
-	@PostMapping("/revoke")
-	public void revokeCertificate(@RequestParam Long serialNumber) {
+	@PostMapping(value = "/revoke/{num}")
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	public void revokeCertificate(@PathVariable("num") Long serialNumber) {
 		certificateService.revoke(serialNumber);
 	}
 }
