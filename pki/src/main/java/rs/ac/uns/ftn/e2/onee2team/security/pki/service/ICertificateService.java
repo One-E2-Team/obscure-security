@@ -9,5 +9,5 @@ public interface ICertificateService {
 	
 	Boolean isRevoked(Long serialNumber);
 	
-	Boolean isCertificateValid(CreateCertificateDTO certificate);
+	Boolean isIssuerValid(CreateCertificateDTO certificate);
 }
