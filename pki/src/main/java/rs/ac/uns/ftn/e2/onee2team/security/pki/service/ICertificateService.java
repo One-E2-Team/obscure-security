@@ -12,7 +12,6 @@ public interface ICertificateService {
 	Boolean isRevoked(Long serialNumber);
 	
 	Boolean isIssuerValid(CreateCertificateDTO certificate);
-}
 
 	List<Certificate> allMyCertificates(String email);
 }

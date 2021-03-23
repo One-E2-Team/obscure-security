@@ -1,6 +1,6 @@
 package rs.ac.uns.ftn.e2.onee2team.security.pki.controller;
 
-import java.security.cert.Certificate;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.Certificate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.CreateCertificateDTO;
-import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.Certificate;
+
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.User;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.service.ICertificateService;
 
