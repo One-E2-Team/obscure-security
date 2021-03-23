@@ -19,7 +19,7 @@ public class CertificateSubject {
 	@Column(name = "id", unique = true, nullable = false)
 	private Long id;
 	
-	@Column(name = "commonName", nullable = false, unique = true)
+	@Column(name = "commonName", nullable = false)
 	private String commonName;
 	
 	@ManyToOne(optional = false, cascade = CascadeType.ALL)
@@ -49,6 +49,4 @@ public class CertificateSubject {
 	public void setUserSubject(UserDefinedSubject userSubject) {
 		this.userSubject = userSubject;
 	}
-	
-	
 }
