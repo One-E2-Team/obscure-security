@@ -16,6 +16,8 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.secret.PublicKeyConverter;
 
 @Entity
@@ -36,6 +38,7 @@ public class Certificate {
 	@Column(name = "endDate", nullable = false)
 	private Date endDate;
 	
+	@JsonIgnore
 	@Column(name = "publicKey", length = 2705, nullable = false, unique = true)
 	@Convert(converter = PublicKeyConverter.class)
 	private PublicKey publicKey;
