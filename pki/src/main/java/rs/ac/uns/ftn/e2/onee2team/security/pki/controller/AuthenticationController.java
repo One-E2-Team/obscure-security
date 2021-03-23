@@ -22,6 +22,7 @@ import rs.ac.uns.ftn.e2.onee2team.security.pki.auth.TokenUtils;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.auth.UserTokenState;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.User;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.UserType;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.service.IKeyVaultService;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.service.IUserService;
 
 
@@ -38,10 +39,13 @@ public class AuthenticationController {
 	@Autowired
 	private IUserService userService;
 	
+	//@Autowired
+	//private IKeyVaultService keyVaultService;
+	
 	@PostMapping("/login") 
 	public ResponseEntity<UserTokenState> createAuthenticationToken(@RequestBody JwtAuthenticationRequest authenticationRequest,
 			HttpServletResponse response) {
-
+		//keyVaultService.dothething();
 		// 
 		Authentication authentication = authenticationManager
 				.authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getEmail(),

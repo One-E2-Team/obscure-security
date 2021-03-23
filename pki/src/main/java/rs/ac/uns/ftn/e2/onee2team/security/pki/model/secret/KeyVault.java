@@ -21,16 +21,17 @@ public class KeyVault {
 	@Column(name = "id", unique = true, nullable = false)
 	private Long id;
 	
-	@Column(name = "privateKey", nullable = false, unique = true)
+	@Column(name = "privateKey", length = 2705, nullable = false, unique = true)
 	@Convert(converter = PrivateKeyConverter.class)
 	private PrivateKey privateKey;
 	
-	@Column(name = "publicKey", nullable = false, unique = true)
+	@Column(name = "publicKey", length = 2705, nullable = false, unique = true)
+	@Convert(converter = PublicKeyConverter.class)
 	private PublicKey publicKey;
 	
 	@Column(name = "endDate", nullable = false)
 	private Date validUntil;
-
+	
 	public Long getId() {
 		return id;
 	}

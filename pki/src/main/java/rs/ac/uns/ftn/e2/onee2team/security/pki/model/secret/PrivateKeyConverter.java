@@ -3,6 +3,7 @@ package rs.ac.uns.ftn.e2.onee2team.security.pki.model.secret;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
+import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
@@ -13,8 +14,12 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.persistence.AttributeConverter;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import rs.ac.uns.ftn.e2.onee2team.security.pki.repository.IKeyVaultRepository;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.util.AES;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.util.Base64Utility;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.util.RSA;
 
 public class PrivateKeyConverter implements AttributeConverter<PrivateKey, String> {
 
