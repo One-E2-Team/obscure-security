@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.CreateCertificateDTO;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.Certificate;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.CertificateSubject;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.CertificateType;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.UserDefinedSubject;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.User;
@@ -28,7 +29,6 @@ public class CertificateService implements ICertificateService {
 
 	@Override
 	public void revoke(Long serialNumber) {
-		System.out.println(certificateRepository.findAll());
 		Certificate cert = certificateRepository.findBySerialNumber(serialNumber);
 		if (cert.getRevoked())
 			return;
@@ -54,6 +54,18 @@ public class CertificateService implements ICertificateService {
 	@Override
 	public Boolean isRevoked(Long serialNumber) {
 		return certificateRepository.findBySerialNumber(serialNumber).getRevoked();
+	}
+	
+	private Certificate createCert(String email, String cn, Long ssn) {
+		Certificate c = new Certificate();
+		User u = userRepository.findByEmail(email);
+		Certificate issuer = certificateRepository.findBySerialNumber(ssn);
+		if(u == null) return null;
+		c.setSubject(new CertificateSubject());
+		c.getSubject().setUserSubject(null);
+		c.getSubject().setCommonName(cn);
+		c.setIssuer(issuer.getSubject());
+		return certificateRepository.save(c);
 	}
 
 	@Override
