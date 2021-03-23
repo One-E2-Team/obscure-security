@@ -3,6 +3,7 @@ package rs.ac.uns.ftn.e2.onee2team.security.pki.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.CreateCertificateDTO;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.Certificate;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.CertificateType;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.repository.ICertificateRepository;
@@ -42,5 +43,11 @@ public class CertificateService implements ICertificateService {
 	@Override
 	public Boolean isRevoked(Long serialNumber) {
 		return certificateRepository.findBySerialNumber(serialNumber).getRevoked();
+	}
+
+	@Override
+	public Boolean isCertificateValid(CreateCertificateDTO certificate) {
+		Certificate issuer = certificateRepository.findBySerialNumber(certificate.getIssuerSerialNumber());		
+		return issuer.canBeIssuerForDateRange(certificate.getStartDate(), certificate.getEndDate()) && !certificate.getRevoked();
 	}
 }
