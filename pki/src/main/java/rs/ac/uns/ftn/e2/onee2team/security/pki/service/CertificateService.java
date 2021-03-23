@@ -1,25 +1,34 @@
 package rs.ac.uns.ftn.e2.onee2team.security.pki.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.CreateCertificateDTO;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.Certificate;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.CertificateType;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.UserDefinedSubject;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.User;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.UserType;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.repository.ICertificateRepository;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.repository.IUserRepository;
 
 @Service
 public class CertificateService implements ICertificateService {
-	
+
 	private ICertificateRepository certificateRepository;
-	
+	private IUserRepository userRepository;
+
 	@Autowired
-	public CertificateService(ICertificateRepository certificateRepository) {
+	public CertificateService(ICertificateRepository certificateRepository, IUserRepository userRepository) {
 		this.certificateRepository = certificateRepository;
+		this.userRepository = userRepository;
 	}
 
 	@Override
 	public void revoke(Long serialNumber) {
+		System.out.println(certificateRepository.findAll());
 		Certificate cert = certificateRepository.findBySerialNumber(serialNumber);
 		if (cert.getRevoked())
 			return;
@@ -51,5 +60,13 @@ public class CertificateService implements ICertificateService {
 	public Boolean isIssuerValid(CreateCertificateDTO certificate) {
 		Certificate issuer = certificateRepository.findBySerialNumber(certificate.getIssuerSerialNumber());		
 		return issuer.canBeIssuerForDateRange(certificate.getStartDate(), certificate.getEndDate());
+	}
+
+	public List<Certificate> allMyCertificates(String email) {
+		User user = userRepository.findByEmail(email);
+		if(user.getUserType() == UserType.ADMINISTRATOR) {
+			return certificateRepository.findAll();
+		}
+		return certificateRepository.findCertificatesByUserSubject(user.getUserSubject());
 	}
 }

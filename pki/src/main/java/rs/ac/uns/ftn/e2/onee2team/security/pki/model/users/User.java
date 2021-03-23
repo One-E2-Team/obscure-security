@@ -33,9 +33,6 @@ import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.UserDefinedSubj
 @DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
 public abstract class User implements UserDetails {
 	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
 	@Id
@@ -96,6 +93,22 @@ public abstract class User implements UserDetails {
 		this.userType = userType;
 	}
 	
+	public UserDefinedSubject getUserSubject() {
+		return userSubject;
+	}
+
+	public void setUserSubject(UserDefinedSubject userSubject) {
+		this.userSubject = userSubject;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public void setUserType(UserType userType) {
+		this.userType = userType;
+	}
+
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		return this.authorities;

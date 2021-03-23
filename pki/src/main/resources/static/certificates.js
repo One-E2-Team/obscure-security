@@ -14,6 +14,7 @@ async function startupFunction() {
     }
   };
   xhttp.open("GET", "/api/certificates/my", true);
+  xhttp.setRequestHeader("Authorization", "Bearer " + getJWTToken());
   xhttp.send();
 }
 
@@ -24,7 +25,6 @@ function populateCertificates(certificates) {
     tr.appendChild(createTd(certificate.serialNumber));
     tr.appendChild(createTd(certificate.startDate));
     tr.appendChild(createTd(certificate.endDate));
-    tr.appendChild(createTd(certificate.publicKey));
     tr.appendChild(createTd(certificate.commonName));
     tr.appendChild(createTd(certificate.organization));
     tr.appendChild(createTd(certificate.organizationalUnit));
@@ -97,4 +97,8 @@ function createButtonTd(id, text) {
   button.innerText = text;
   tdButton.appendChild(button);
   return tdButton;
+}
+
+function getJWTToken() {
+  return JSON.parse(sessionStorage.getItem('JWT')).accessToken;
 }
