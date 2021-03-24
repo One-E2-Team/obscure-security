@@ -21,7 +21,7 @@ public class KeyVault {
 	@Column(name = "id", unique = true, nullable = false)
 	private Long id;
 	
-	@Column(name = "privateKey", length = 2705, nullable = false, unique = true)
+	@Column(name = "privateKey", length = 2705, nullable = true)
 	@Convert(converter = PrivateKeyConverter.class)
 	private PrivateKey privateKey;
 	

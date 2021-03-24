@@ -1,6 +1,5 @@
 package rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -19,7 +18,7 @@ public class CertificateExtension {
 	@Column(name = "id", unique = true, nullable = false)
 	private Long id;
 	
-	@ManyToOne(optional = false, cascade = CascadeType.ALL)
+	@ManyToOne(optional = false)
 	@JoinColumn(name = "extension_name_id")
 	private AvailableExtension field;
 	

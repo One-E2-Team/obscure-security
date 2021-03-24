@@ -14,4 +14,6 @@ public interface ICertificateService {
 	Boolean isIssuerValid(CreateCertificateDTO certificate);
 
 	List<Certificate> allMyCertificates(String email);
+	
+	Certificate createCert(CreateCertificateDTO ccdto);
 }

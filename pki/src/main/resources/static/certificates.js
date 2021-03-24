@@ -25,9 +25,9 @@ function populateCertificates(certificates) {
     tr.appendChild(createTd(certificate.serialNumber));
     tr.appendChild(createTd(certificate.startDate));
     tr.appendChild(createTd(certificate.endDate));
-    tr.appendChild(createTd(certificate.commonName));
-    tr.appendChild(createTd(certificate.organization));
-    tr.appendChild(createTd(certificate.organizationalUnit));
+    tr.appendChild(createTd(certificate.subject.commonName));
+    tr.appendChild(createTd(certificate.subject.userSubject.organization));
+    tr.appendChild(createTd(certificate.subject.userSubject.organizationalUnit));
     tr.appendChild(createSelectTd(certificate));
     let tdArea = document.createElement('td');
     let area = document.createElement('textarea');
