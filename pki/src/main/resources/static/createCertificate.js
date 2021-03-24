@@ -3,6 +3,7 @@ var selectedExtensions = []
 var selectedTextId = ""
 var issuer = {}
 var users = []
+var pubKey = {}
 
 
 document.addEventListener("DOMContentLoaded", function(event) {
@@ -11,10 +12,51 @@ document.addEventListener("DOMContentLoaded", function(event) {
     getUsers();
 
     document.getElementById("create-btn").addEventListener("click", function() { createCertificate() });
-    document.getElementById("type").addEventListener("change", function() { disablePublicKey() })
-    document.getElementById("ch-generate-key").addEventListener("change", function() { disablePublicKey() })
-    document.getElementById("update-text-btn").addEventListener("click", function() { updateText(selectedTextId) })
+    document.getElementById("type").addEventListener("change", function() { disablePublicKey() });
+    document.getElementById("ch-generate-key").addEventListener("change", function() {
+        if (document.getElementById("ch-generate-key").checked) {
+            generatePublicKey();
+        }
+        disablePublicKey()
+    });
+    document.getElementById("update-text-btn").addEventListener("click", function() { updateText(selectedTextId) });
+    document.getElementById("user").addEventListener("change", function() {
+        let email = document.getElementById("user").value;
+        showInTextArea(getUserByEmail(email).userSubject)
+    })
 });
+
+function generatePublicKey() {
+    let xhr = new XMLHttpRequest();
+
+    xhr.open("POST", "/api/certificates/issuerpubkeys");
+    xhr.setRequestHeader("Authorization", "Bearer " + getJWTToken());
+    xhr.responseType = 'json';
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            pubKey = this.response[0];
+            console.log(pubKey.publicKey)
+            document.getElementById('public-key').value = pubKey.publicKey
+            console.log(this.response);
+        }
+    };
+    xhr.send(document.getElementById('user').value);
+}
+
+function getUserByEmail(email) {
+    for (user of users) {
+        if (user.email == email) return user;
+    }
+    return null;
+}
+
+function showInTextArea(object) {
+    let info = ""
+    for (let property of Object.keys(object)) {
+        info += property + ": " + object[property] + "\n";
+    }
+    document.getElementById("ta-description").innerText = info;
+}
 
 
 async function collectExtensions() {
@@ -37,10 +79,24 @@ async function getIssuer() {
     let paramsUrl = url.split('?')[1]
     let params = paramsUrl.split('&')
     let issuerSerialId = params[0].split('=')[1];
-    issuer.id = issuerSerialId
-    console.log("issuerId = " + issuerSerialId);
-    //TODO getIssuerInfo preko issuerSerialId
 
+    let xhr = new XMLHttpRequest();
+
+    xhr.open("GET", "/api/certificates/user/" + issuerSerialId);
+    xhr.setRequestHeader("Authorization", "Bearer " + getJWTToken());
+    xhr.responseType = 'json';
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            issuer = this.response;
+            issuer.id = issuerSerialId
+            let parent = document.getElementById('parent');
+            parent.innerText = issuer.id;
+            parent.addEventListener("click", function() {
+                showInTextArea(issuer);
+            })
+        }
+    };
+    xhr.send();
 }
 
 async function getUsers() {
@@ -52,6 +108,7 @@ async function getUsers() {
     xhr.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             users = this.response;
+            console.log(users);
             populateUsers();
         }
     };
@@ -63,6 +120,7 @@ function populateUsers() {
     for (let user of users) {
         let option = document.createElement('option');
         option.value = user.email;
+        option.innerText = user.email;
         userSelect.appendChild(option);
     }
 }
@@ -82,6 +140,7 @@ function createCertificate() {
         startDate: document.getElementById('start-date').value,
         endDate: document.getElementById('end-date').value,
         email: document.getElementById('user').value,
+        commonName: document.getElementById("common-name").value,
         publicKey: pubkey,
         issuerSerialNumber: issuer.id,
         extensions: getUsedExtensions()

@@ -72,7 +72,7 @@ public class CertificateController {
 		else return null;
 	}
 	
-	@GetMapping(value = "/issuerpubkeys")
+	@PostMapping(value = "/issuerpubkeys")
 	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')")
 	public List<PublicKeysDTO> getPubKeys(@RequestBody String email) {
 		return certificateService.getAvailablePublicKeys(email);
