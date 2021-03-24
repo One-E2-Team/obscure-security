@@ -3,16 +3,33 @@ package rs.ac.uns.ftn.e2.onee2team.security.pki.dto;
 import java.util.Date;
 import java.util.List;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.CertificateExtension;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.CertificateType;
 
 public class CreateCertificateDTO {
+	
+	@NotNull(message = "Start date cannot be null.")
 	private Date startDate;
+	
+	@NotNull(message = "End date cannot be null.")
 	private Date endDate;
+	
+	@NotBlank(message = "Common name cannot be empty.")
 	private String commonName;
+	
+	@NotBlank(message = "Email cannot be empty.")
 	private String email;
+	
+	@NotNull(message = "Public key cannot be empty.")
 	private String publicKey;
+	
+	@NotNull(message = "Issuer serial number cannot be null.")
 	private Long issuerSerialNumber;
+	
+	@NotNull(message = "Certificate type cannot be null.")
 	private CertificateType type;
 	private List<CertificateExtension> extensions;
 	
