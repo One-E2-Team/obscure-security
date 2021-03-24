@@ -93,12 +93,26 @@ public class CertificateService implements ICertificateService {
 	public Certificate createCert(CreateCertificateDTO ccdto) {
 		Certificate c = new Certificate();
 		User u = userRepository.findByEmail(ccdto.getEmail());
-		Certificate issuer = certificateRepository.findBySerialNumber(ccdto.getIssuerSerialNumber());
-		if(u == null || issuer == null) return null;
-		c.setSubject(new CertificateSubject()); // TODO - check existence and appendence
-		c.getSubject().setUserSubject(u.getUserSubject());
-		c.getSubject().setCommonName(ccdto.getCommonName());
-		c.setIssuer(issuer.getSubject());
+		if(ccdto.getType() == CertificateType.ROOT) {
+			CertificateSubject cs = new CertificateSubject();
+			cs.setCommonName(ccdto.getCommonName());
+			cs.setUserSubject(u.getUserSubject());
+			c.setIssuer(cs);
+		} else {
+			Certificate issuer = certificateRepository.findBySerialNumber(ccdto.getIssuerSerialNumber());
+			c.setIssuer(issuer.getSubject());
+		}
+		if(u == null) return null;
+		List<Certificate> certExists = certificateRepository.findAllOrderedDescStartDateByCNAndUserDefinedSubject(ccdto.getCommonName(), u.getUserSubject());
+		if(certExists.size() != 0) {
+			if(certExists.get(0).getEndDate().compareTo(ccdto.getStartDate()) <= 0)
+				c.setSubject(certExists.get(0).getSubject());
+			else return null;
+		} else {
+			c.setSubject(new CertificateSubject());
+			c.getSubject().setUserSubject(u.getUserSubject());
+			c.getSubject().setCommonName(ccdto.getCommonName());
+		}
 		c.setSerialNumber(UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE);
 		c.setRevoked(false);
 		c.setStartDate(ccdto.getStartDate());
@@ -119,15 +133,20 @@ public class CertificateService implements ICertificateService {
 			} else if(key.getValidUntil().after(ccdto.getEndDate())){
 				c.setPublicKey(pk);
 			} else return null;
-		} else {
+		} else if(ccdto.getType() == CertificateType.ROOT || (ccdto.getType() == CertificateType.INTERMEDIATE && (ccdto.getPublicKey() == null || ccdto.getPublicKey() == ""))) {
 			KeyPair kp = RSA.generateKeys();
 			KeyVault kv = new KeyVault();
 			kv.setPrivateKey(kp.getPrivate());
 			kv.setPublicKey(kp.getPublic());
-			kv.setValidUntil(new Date((new Date()).getTime() + 315360000000L));
+			Long validity = ccdto.getType() != CertificateType.INTERMEDIATE ? 315360000000L : 315360000000L /2;
+			kv.setValidUntil(new Date((new Date()).getTime() + validity));
 			kv = keyVaultRepository.save(kv);
 			c.setPublicKey(kv.getPublicKey());
-		}
+		} else if(ccdto.getType() == CertificateType.INTERMEDIATE) {
+			KeyVault kv = keyVaultRepository.findByPublicKey((new PublicKeyConverter()).convertToEntityAttribute(ccdto.getPublicKey()));
+			if(kv.getValidUntil().compareTo(ccdto.getEndDate()) > 0) return null;
+			c.setPublicKey(kv.getPublicKey());
+		} else return null;
 		return certificateRepository.save(c);
 	}
 

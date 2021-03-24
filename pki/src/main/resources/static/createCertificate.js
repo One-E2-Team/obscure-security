@@ -1,16 +1,23 @@
 var extensions = []
 var selectedExtensions = []
 var selectedTextId = ""
+var issuer = {}
+var users = []
+
 
 document.addEventListener("DOMContentLoaded", function(event) {
-    startupFunction();
+    collectExtensions();
+    getIssuer();
+    getUsers();
+
     document.getElementById("create-btn").addEventListener("click", function() { createCertificate() });
-    document.getElementById("type").addEventListener("change", function() { showPublicKey() })
+    document.getElementById("type").addEventListener("change", function() { disablePublicKey() })
+    document.getElementById("ch-generate-key").addEventListener("change", function() { disablePublicKey() })
     document.getElementById("update-text-btn").addEventListener("click", function() { updateText(selectedTextId) })
 });
 
 
-function startupFunction() {
+async function collectExtensions() {
     let xhr = new XMLHttpRequest();
 
     xhr.open("GET", "/api/extensions");
@@ -25,19 +32,56 @@ function startupFunction() {
     xhr.send();
 }
 
-function showPublicKey() {
-    //TODO: prikaz public key-a na frontu
-    console.log("Zmago je kriv");
+async function getIssuer() {
+    let url = window.location.href;
+    let paramsUrl = url.split('?')[1]
+    let params = paramsUrl.split('&')
+    let issuerSerialId = params[0].split('=')[1];
+    console.log("issuerId = " + issuerSerialId);
+    //TODO getIssuerInfo preko issuerSerialId
+
+}
+
+async function getUsers() {
+    let xhr = new XMLHttpRequest();
+
+    xhr.open("GET", "/api/users");
+    xhr.setRequestHeader("Authorization", "Bearer " + getJWTToken());
+    xhr.responseType = 'json';
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            users = this.response;
+            populateUsers();
+        }
+    };
+    xhr.send();
+}
+
+function populateUsers() {
+    let userSelect = document.getElementById("user");
+    for (let user of users) {
+        let option = document.createElement('option');
+        option.value = user.email;
+        userSelect.appendChild(option);
+    }
+}
+
+function disablePublicKey() {
+    document.getElementById("public-key").disabled = publicKeyShouldBeDisabled();
+}
+
+function publicKeyShouldBeDisabled() {
+    return document.getElementById("type").value == "ROOT" || document.getElementById("ch-generate-key").checked
 }
 
 function createCertificate() {
-
+    let pubkey = publicKeyShouldBeDisabled() ? "" : document.getElementById("public-key").value
     let request = {
         type: document.getElementById('type').value,
         startDate: document.getElementById('start-date').value,
         endDate: document.getElementById('end-date').value,
         email: "",
-        publicKey: "",
+        publicKey: pubkey,
         issuerSerialNumber: "",
         extensions: getUsedExtensions()
     }
