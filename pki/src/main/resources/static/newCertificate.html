@@ -3,65 +3,141 @@
 <head>
     <title>Create new certificate</title>
     <style>
-        .container { 
-            position: relative; 
+
+        * {
+            box-sizing: border-box;
         }
 
-        .center {
+        body {
             margin: 0;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            -ms-transform: translate(-50%, -50%);
-            transform: translate(-50%, -50%);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-rows: auto auto;
+            background-color: #2196F3;
+            grid-row-gap: 50px;
+            padding: 10px;
+        }
+
+        .column {
+            float: left;
+            width: 50%;
+            padding: 15px;
+        }
+
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+            padding-top: 15px;
+        }
+
+        /* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
+        @media screen and (max-width:600px) {
+            .column {
+                width: 100%;
+            }
+        }
+
+        .container { 
+            position: relative; 
+            background-color: aquamarine;
+        }
+
+        .left-margin
+         {
+            margin: auto;
+            position: relative;
+            margin-left: 20%;
+
         }
         input, select {
             margin: 1em;
             width: 150px;
             margin-left: 10px;
         }
+        table {
+            border: 1px solid black;
+        }
+
+        .scroll-wrapper{
+            overflow: auto;
+        }
+        .highlight {
+            background-color: #b8b8b8;
+        }
     </style>
+    <script src="createCertificate.js"></script>
+    <meta charset='utf-8'>
 </head>
 <body>
-    <form class="container center">
-        <table>
-            <tr>
-                <td><label for="parent">Type: </label></td>
-                <td>
-                    <select id="type">
-                        <option value="" selected>-</option>
-                        <option value="ROOT">Root</option>
-                        <option value="INTERMEDIATE">Intermediate</option>
-                        <option value="END">End entity</option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td><label for="parent">Parent: </label></td>
-                <td><select id="parent" name="parent"></select></td>
-            </tr>
-            <tr>
-                <td><label for="start-date">Start date: </label></td>
-                <td><input id="start-date" type="date"></td>
-            </tr>
-            <tr>
-                <td><label for="end-date">End date: </label></td>
-                <td><input id="end-date" type="date"></td>
-            </tr>
-            <tr>
-                <td><label for="common-name">Common name: </label></td>
-                <td><input type="text" id="common-name" name="common-name"></td>
-            </tr>
-            <tr>
-                <td><label for="alt-name">Alternative name: </label></td>
-                <td><input type="text" id="alt-name" name="alt-name"></td>
-            </tr>
-            <tr style="text-align: center;">
-                <td colspan="2" ><input type="submit" value="Create"></td>
-            </tr>
-        
-        </table>
-            
-    </form>
+    <div class="header">
+        <h1>Header</h1>
+        <p>Resize the browser window to see the responsive effect.</p>
+    </div>
+    <div class="row">
+        <div class="column scroll-wrapper">
+            <form class="container left-margin">
+                <table>
+                    <tr>
+                        <td><label for="parent">Type: </label></td>
+                        <td>
+                            <select id="type">
+                                <option value="" selected>-</option>
+                                <option value="ROOT">Root</option>
+                                <option value="INTERMEDIATE">Intermediate</option>
+                                <option value="END">End entity</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><label for="parent">Parent: </label></td>
+                        <td><select id="parent" name="parent"></select></td>
+                    </tr>
+                    <tr>
+                        <td><label for="start-date">Start date: </label></td>
+                        <td><input id="start-date" type="date"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="end-date">End date: </label></td>
+                        <td><input id="end-date" type="date"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="common-name">Common name: </label></td>
+                        <td><input type="text" id="common-name" name="common-name"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="alt-name">Alternative name: </label></td>
+                        <td><input type="text" id="alt-name" name="alt-name"></td>
+                    </tr>
+                    <tr style="text-align: center;">
+                        <td colspan="2" ><input type="submit" value="Create"></td>
+                    </tr>
+                
+                </table>
+                    
+            </form>
+        </div>
+        <div class="column">
+            <div class="grid-container">
+                <div class="container">
+                    <table id="extensions-table">
+                    </table>
+                    <div>
+                        <button id="btn-add-cert">Add extension</button>
+                    </div>
+                </div>
+
+                <div style="background-color: brown;">
+                    <textarea>Ovde ide opis</textarea>
+                    <div>
+                        <button>Update</button>
+                        <button>Remove</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
