@@ -141,11 +141,24 @@ function createCertificate() {
         endDate: document.getElementById('end-date').value,
         email: document.getElementById('user').value,
         commonName: document.getElementById("common-name").value,
-        publicKey: pubkey,
+        publicKey: document.getElementById("public-key").value,
         issuerSerialNumber: issuer.id,
         extensions: getUsedExtensions()
     }
-    console.log(request);
+
+    let xhr = new XMLHttpRequest();
+
+    xhr.open("POST", "/api/certificates/create");
+    xhr.setRequestHeader("Authorization", "Bearer " + getJWTToken());
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.responseType = 'json';
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            console.log(this.response)
+        }
+    };
+    xhr.send(JSON.stringify(request));
+
 }
 
 function getUsedExtensions() {
