@@ -37,6 +37,7 @@ async function getIssuer() {
     let paramsUrl = url.split('?')[1]
     let params = paramsUrl.split('&')
     let issuerSerialId = params[0].split('=')[1];
+    issuer.id = issuerSerialId
     console.log("issuerId = " + issuerSerialId);
     //TODO getIssuerInfo preko issuerSerialId
 
@@ -80,9 +81,9 @@ function createCertificate() {
         type: document.getElementById('type').value,
         startDate: document.getElementById('start-date').value,
         endDate: document.getElementById('end-date').value,
-        email: "",
+        email: document.getElementById('user').value,
         publicKey: pubkey,
-        issuerSerialNumber: "",
+        issuerSerialNumber: issuer.id,
         extensions: getUsedExtensions()
     }
     console.log(request);
@@ -92,7 +93,9 @@ function getUsedExtensions() {
     let result = []
     for (let ext of selectedExtensions) {
         let el = {
-            extension: ext.text,
+            field: {
+                name: ext.text
+            },
             value: document.getElementById("ext-data" + ext.id).value
         }
         result.push(el)
