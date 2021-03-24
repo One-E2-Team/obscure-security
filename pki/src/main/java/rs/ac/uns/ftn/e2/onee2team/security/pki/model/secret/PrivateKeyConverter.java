@@ -6,6 +6,7 @@ import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 
@@ -48,6 +49,7 @@ public class PrivateKeyConverter implements AttributeConverter<PrivateKey, Strin
 	
 	@Override
 	public String convertToDatabaseColumn(PrivateKey attribute) {
+		if(attribute == null) return null;
 		String data = null;
 		try {
 			data = new String(AES.encrypt(new String(Base64Utility.encode(attribute.getEncoded())), key, iv));
@@ -59,6 +61,7 @@ public class PrivateKeyConverter implements AttributeConverter<PrivateKey, Strin
 
 	@Override
 	public PrivateKey convertToEntityAttribute(String dbData) {
+		if(dbData == null) return null;
 		byte[] data = null;
 		try {
 			data = Base64Utility.decode(new String(AES.decrypt(dbData.getBytes(), key, iv)));

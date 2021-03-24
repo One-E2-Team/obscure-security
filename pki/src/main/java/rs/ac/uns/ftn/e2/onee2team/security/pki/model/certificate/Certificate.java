@@ -39,7 +39,7 @@ public class Certificate {
 	private Date endDate;
 	
 	@JsonIgnore
-	@Column(name = "publicKey", length = 2705, nullable = false, unique = true)
+	@Column(name = "publicKey", length = 2705, nullable = false)
 	@Convert(converter = PublicKeyConverter.class)
 	private PublicKey publicKey;
 	

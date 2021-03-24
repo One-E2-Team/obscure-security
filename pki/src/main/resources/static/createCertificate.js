@@ -141,7 +141,7 @@ function createCertificate() {
         endDate: document.getElementById('end-date').value,
         email: document.getElementById('user').value,
         commonName: document.getElementById("common-name").value,
-        publicKey: document.getElementById("public-key").value,
+        publicKey: pubkey,
         issuerSerialNumber: issuer.id,
         extensions: getUsedExtensions()
     }
