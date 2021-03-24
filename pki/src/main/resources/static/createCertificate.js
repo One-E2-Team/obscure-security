@@ -1,9 +1,13 @@
 var extensions = []
+var selectedExtension = ""
 
 document.addEventListener("DOMContentLoaded", function(event) {
-    alert("djes")
-    startupFunction();
+    startupFunction(); 
   });
+
+function addExtension(){
+    alert(selectedExtension)
+}
 
 function startupFunction(){
     let xhr = new XMLHttpRequest();
@@ -22,7 +26,7 @@ function startupFunction(){
 
 
 function populateExtensions(){
-    let table = document.getElementById('extensions-table');
+    let table = document.getElementById('availableExtensions');
     for(let ext of extensions){
         let tr = document.createElement('tr');
         let td = document.createElement('td');
@@ -31,29 +35,32 @@ function populateExtensions(){
         table.appendChild(tr);
     }
 
+    table.addEventListener('click', function (item) {
+        selectRow(item)
+    });
+
 }
 
-document.getElementById('extensions-table')
-            .addEventListener('click', function (item) {
+
+function selectRow(item){
   
-                var row = item.path[1];
-  
-                var row_value = "";
-  
-                for (var j = 0; j < row.cells.length; j++) {
-  
-                    row_value += row.cells[j].innerHTML;
-                    row_value += " | ";
-                }
-  
-                alert(row_value);
-  
-                // Toggle the highlight
-                if (row.classList.contains('highlight'))
-                    row.classList.remove('highlight');
-                else
-                    row.classList.add('highlight');
-            });
+        var row = item.path[1];
+
+        for (var j = 0; j < row.cells.length; j++) {
+
+            selectedExtension += row.cells[j].innerHTML;
+        }
+
+        if (row.classList.contains('highlight')){
+            row.classList.remove('highlight');
+            selectedExtension = "";
+        }
+        else{
+            
+            row.classList.add('highlight');
+            document.getElementById("btn-add-cert").addEventListener("click", alert(selectedExtension));
+        }
+}
 
 function getJWTToken() {
     return JSON.parse(sessionStorage.getItem('JWT')).accessToken;
