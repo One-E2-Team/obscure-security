@@ -89,10 +89,9 @@
                         <td><label for="parent">Type: </label></td>
                         <td>
                             <select id="type">
-                                <option value="" selected>-</option>
-                                <option value="ROOT">Root</option>
+                                <option value="ROOT" >Root</option>
                                 <option value="INTERMEDIATE">Intermediate</option>
-                                <option value="END">End entity</option>
+                                <option value="END" selected>End entity</option>
                             </select>
                         </td>
                     </tr>
@@ -122,10 +121,11 @@
                     <tr>
                         <td><label for="public-key">Public key: </label></td>
                         <td>
+                            <select id="generated-keys"></select>
                             <input type="text" id="public-key" name="public-key">
                         </td>
                         <td>
-                            <div>
+                            <div id="checks">
                                 <input type="checkbox" id="ch-generate-key" style="width: 15px; margin-bottom: 2px;"> <label>generate key</label>
                             </div>
                         </td>
