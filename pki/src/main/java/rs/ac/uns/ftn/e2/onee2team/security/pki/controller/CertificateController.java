@@ -1,6 +1,7 @@
 package rs.ac.uns.ftn.e2.onee2team.security.pki.controller;
 
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.Certificate;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,12 +22,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.CreateCertificateDTO;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.PublicKeysDTO;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.UserCommonNameDTO;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.User;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.service.ICertificateService;
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping(value = "/api/certificates", produces = MediaType.APPLICATION_JSON_VALUE)
-public class CertificateController {
+public class CertificateController extends ValidationController {
 
 	private ICertificateService certificateService;
 
@@ -41,6 +44,12 @@ public class CertificateController {
 	public List<Certificate> allMyCertificates(Authentication auth) {
 		User user = (User) auth.getPrincipal();
 		return certificateService.allMyCertificates(user.getEmail());
+	}
+	
+	@GetMapping(value = "/user/{num}")
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')")
+	public UserCommonNameDTO getUserBySerialNumber(@PathVariable("num") Long serialNumber) {
+		return certificateService.findUserBySerialNumber(serialNumber);
 	}
 
 	@PostMapping(value = "/revoke/{num}")
@@ -58,14 +67,14 @@ public class CertificateController {
 	
 	@PostMapping(value = "/create")
 	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')")
-	public Certificate create(@RequestBody CreateCertificateDTO ccdto, Authentication auth) {
+	public Certificate create(@Valid @RequestBody CreateCertificateDTO ccdto, Authentication auth) {
 		User user = (User) auth.getPrincipal();
 		if(certificateService.isIssuerValid(ccdto, user))
 			return certificateService.createCert(ccdto);
 		else return null;
 	}
 	
-	@GetMapping(value = "/issuerpubkeys")
+	@PostMapping(value = "/issuerpubkeys")
 	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')")
 	public List<PublicKeysDTO> getPubKeys(@RequestBody String email) {
 		return certificateService.getAvailablePublicKeys(email);

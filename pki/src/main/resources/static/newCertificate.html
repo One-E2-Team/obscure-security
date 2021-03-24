@@ -60,6 +60,7 @@
         
         table {
             border: 1px solid black;
+            width: auto;
         }
         
         .scroll-wrapper {
@@ -97,7 +98,7 @@
                     </tr>
                     <tr>
                         <td><label for="parent">Parent: </label></td>
-                        <td><select id="parent" name="parent"></select></td>
+                        <td><label type="text" id="parent" disabled name="parent"></label></td>
                     </tr>
                     <tr>
                         <td><label for="start-date">Start date: </label></td>
@@ -108,12 +109,26 @@
                         <td><input id="end-date" type="date"></td>
                     </tr>
                     <tr>
+                        <td><label for="user">User: </label></td>
+                        <td>
+                            <select id="user" name="user">
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
                         <td><label for="common-name">Common name: </label></td>
                         <td><input type="text" id="common-name" name="common-name"></td>
                     </tr>
                     <tr>
                         <td><label for="public-key">Public key: </label></td>
-                        <td><input type="text" id="public-key" name="public-key"></td>
+                        <td>
+                            <input type="text" id="public-key" name="public-key">
+                        </td>
+                        <td>
+                            <div>
+                                <input type="checkbox" id="ch-generate-key" style="width: 15px; margin-bottom: 2px;"> <label>generate key</label>
+                            </div>
+                        </td>
                     </tr>
                 </table>
                 <div style="text-align: center;">

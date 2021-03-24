@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.CreateCertificateDTO;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.PublicKeysDTO;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.UserCommonNameDTO;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.Certificate;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.CertificateExtension;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.CertificateSubject;
@@ -52,6 +53,15 @@ public class CertificateService implements ICertificateService {
 		this.certificateRepository = certificateRepository;
 		this.userRepository = userRepository;
 		this.keyVaultRepository = keyVaultRepository;
+	}
+	
+	@Override
+	public UserCommonNameDTO findUserBySerialNumber(Long serialNumber) {
+		UserCommonNameDTO dto = new UserCommonNameDTO();
+		Certificate cert = certificateRepository.findBySerialNumber(serialNumber);
+		dto.setCommonName(cert.getSubject().getCommonName());
+		dto.setUserSubject(cert.getSubject().getUserSubject());
+		return dto;
 	}
 
 	@Override

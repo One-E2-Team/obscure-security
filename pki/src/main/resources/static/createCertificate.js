@@ -1,16 +1,65 @@
 var extensions = []
 var selectedExtensions = []
 var selectedTextId = ""
+var issuer = {}
+var users = []
+var pubKey = {}
+
 
 document.addEventListener("DOMContentLoaded", function(event) {
-    startupFunction();
+    collectExtensions();
+    getIssuer();
+    getUsers();
+
     document.getElementById("create-btn").addEventListener("click", function() { createCertificate() });
-    document.getElementById("type").addEventListener("change", function() { showPublicKey() })
-    document.getElementById("update-text-btn").addEventListener("click", function() { updateText(selectedTextId) })
+    document.getElementById("type").addEventListener("change", function() { disablePublicKey() });
+    document.getElementById("ch-generate-key").addEventListener("change", function() {
+        if (document.getElementById("ch-generate-key").checked) {
+            generatePublicKey();
+        }
+        disablePublicKey()
+    });
+    document.getElementById("update-text-btn").addEventListener("click", function() { updateText(selectedTextId) });
+    document.getElementById("user").addEventListener("change", function() {
+        let email = document.getElementById("user").value;
+        showInTextArea(getUserByEmail(email).userSubject)
+    })
 });
 
+function generatePublicKey() {
+    let xhr = new XMLHttpRequest();
 
-function startupFunction() {
+    xhr.open("POST", "/api/certificates/issuerpubkeys");
+    xhr.setRequestHeader("Authorization", "Bearer " + getJWTToken());
+    xhr.responseType = 'json';
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            pubKey = this.response[0];
+            console.log(pubKey.publicKey)
+            document.getElementById('public-key').value = pubKey.publicKey
+            console.log(this.response);
+        }
+    };
+    xhr.send(document.getElementById('user').value);
+}
+
+function getUserByEmail(email) {
+    for (user of users) {
+        if (user.email == email) return user;
+    }
+    return null;
+}
+
+function showInTextArea(object) {
+    let info = ""
+    for (let property of Object.keys(object)) {
+        info += property + ": " + object[property] + "\n";
+    }
+    document.getElementById("ta-description").innerText = info;
+}
+
+
+async function collectExtensions() {
     let xhr = new XMLHttpRequest();
 
     xhr.open("GET", "/api/extensions");
@@ -25,20 +74,75 @@ function startupFunction() {
     xhr.send();
 }
 
-function showPublicKey() {
-    //TODO: prikaz public key-a na frontu
-    console.log("Zmago je kriv");
+async function getIssuer() {
+    let url = window.location.href;
+    let paramsUrl = url.split('?')[1]
+    let params = paramsUrl.split('&')
+    let issuerSerialId = params[0].split('=')[1];
+
+    let xhr = new XMLHttpRequest();
+
+    xhr.open("GET", "/api/certificates/user/" + issuerSerialId);
+    xhr.setRequestHeader("Authorization", "Bearer " + getJWTToken());
+    xhr.responseType = 'json';
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            issuer = this.response;
+            issuer.id = issuerSerialId
+            let parent = document.getElementById('parent');
+            parent.innerText = issuer.id;
+            parent.addEventListener("click", function() {
+                showInTextArea(issuer);
+            })
+        }
+    };
+    xhr.send();
+}
+
+async function getUsers() {
+    let xhr = new XMLHttpRequest();
+
+    xhr.open("GET", "/api/users");
+    xhr.setRequestHeader("Authorization", "Bearer " + getJWTToken());
+    xhr.responseType = 'json';
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            users = this.response;
+            console.log(users);
+            populateUsers();
+        }
+    };
+    xhr.send();
+}
+
+function populateUsers() {
+    let userSelect = document.getElementById("user");
+    for (let user of users) {
+        let option = document.createElement('option');
+        option.value = user.email;
+        option.innerText = user.email;
+        userSelect.appendChild(option);
+    }
+}
+
+function disablePublicKey() {
+    document.getElementById("public-key").disabled = publicKeyShouldBeDisabled();
+}
+
+function publicKeyShouldBeDisabled() {
+    return document.getElementById("type").value == "ROOT" || document.getElementById("ch-generate-key").checked
 }
 
 function createCertificate() {
-
+    let pubkey = publicKeyShouldBeDisabled() ? "" : document.getElementById("public-key").value
     let request = {
         type: document.getElementById('type').value,
         startDate: document.getElementById('start-date').value,
         endDate: document.getElementById('end-date').value,
-        email: "",
-        publicKey: "",
-        issuerSerialNumber: "",
+        email: document.getElementById('user').value,
+        commonName: document.getElementById("common-name").value,
+        publicKey: pubkey,
+        issuerSerialNumber: issuer.id,
         extensions: getUsedExtensions()
     }
     console.log(request);
@@ -48,7 +152,9 @@ function getUsedExtensions() {
     let result = []
     for (let ext of selectedExtensions) {
         let el = {
-            extension: ext.text,
+            field: {
+                name: ext.text
+            },
             value: document.getElementById("ext-data" + ext.id).value
         }
         result.push(el)
