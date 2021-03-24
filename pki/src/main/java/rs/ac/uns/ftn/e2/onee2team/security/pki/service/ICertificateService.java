@@ -1,6 +1,8 @@
 package rs.ac.uns.ftn.e2.onee2team.security.pki.service;
 
 import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.CreateCertificateDTO;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.PublicKeysDTO;
+
 import java.util.List;
 
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.Certificate;
@@ -16,4 +18,6 @@ public interface ICertificateService {
 	List<Certificate> allMyCertificates(String email);
 	
 	Certificate createCert(CreateCertificateDTO ccdto);
+	
+	List<PublicKeysDTO> getAvailablePublicKeys(String email);
 }

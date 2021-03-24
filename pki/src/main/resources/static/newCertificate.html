@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Create new certificate</title>
     <style>
-
         * {
             box-sizing: border-box;
         }
-
+        
         body {
             margin: 0;
         }
-
+        
         .grid-container {
             display: grid;
             grid-template-rows: auto auto;
@@ -19,58 +19,62 @@
             grid-row-gap: 50px;
             padding: 10px;
         }
-
+        
         .column {
             float: left;
             width: 50%;
             padding: 15px;
         }
-
+        
         .row:after {
             content: "";
             display: table;
             clear: both;
             padding-top: 15px;
         }
-
         /* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
+        
         @media screen and (max-width:600px) {
             .column {
                 width: 100%;
             }
         }
-
-        .container { 
-            position: relative; 
+        
+        .container {
+            position: relative;
             background-color: aquamarine;
         }
-
-        .left-margin
-         {
+        
+        .left-margin {
             margin: auto;
             position: relative;
             margin-left: 20%;
-
         }
-        input, select {
+        
+        input,
+        select {
             margin: 1em;
             width: 150px;
             margin-left: 10px;
         }
+        
         table {
             border: 1px solid black;
         }
-
-        .scroll-wrapper{
+        
+        .scroll-wrapper {
             overflow: auto;
         }
+        
         .highlight {
             background-color: #b8b8b8;
         }
     </style>
+    <script src='util.js' type='text/javascript'></script>
     <script src="createCertificate.js"></script>
     <meta charset='utf-8'>
 </head>
+
 <body>
     <div class="header">
         <h1>Header</h1>
@@ -112,11 +116,11 @@
                         <td><input type="text" id="alt-name" name="alt-name"></td>
                     </tr>
                     <tr style="text-align: center;">
-                        <td colspan="2" ><input type="submit" value="Create"></td>
+                        <td colspan="2"><input type="submit" value="Create"></td>
                     </tr>
-                
+
                 </table>
-                    
+
             </form>
         </div>
         <div class="column">
@@ -140,4 +144,5 @@
         </div>
     </div>
 </body>
+
 </html>
