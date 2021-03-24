@@ -4,6 +4,7 @@ import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.Certificate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.origin.SystemEnvironmentOrigin;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -46,7 +47,7 @@ public class CertificateController {
 	}
 	
 	@PostMapping("/is-valid")
-	public boolean isCertificateValidate(@RequestBody CreateCertificateDTO certificate) {
+	public Boolean isCertificateValidate(@RequestBody CreateCertificateDTO certificate) {
 		return certificateService.isIssuerValid(certificate);
 	}
 	

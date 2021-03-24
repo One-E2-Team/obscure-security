@@ -152,11 +152,11 @@ public class Certificate {
 		this.revoked = revoked;
 	}
 	
-	public boolean canBeIssuerForDateRange(Date start, Date end) {	
+	public Boolean canBeIssuerForDateRange(Date start, Date end) {	
 		return inRange(start,end) && !type.equals(CertificateType.END) && !revoked;
 	}
 	
-	private boolean inRange(Date start, Date end) {
+	private Boolean inRange(Date start, Date end) {
 		boolean startDateInRange = startDate.compareTo(start) <=0 && endDate.compareTo(start)>=0;
 		boolean endDateInRange = startDate.compareTo(end) <=0 && endDate.compareTo(end)>=0;
 		return startDateInRange && endDateInRange;

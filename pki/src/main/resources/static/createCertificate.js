@@ -136,9 +136,6 @@ function removeExtensionToCertificate(id) {
     elem.parentNode.removeChild(elem);
 }
 
-function getJWTToken() {
-    return JSON.parse(sessionStorage.getItem('JWT')).accessToken;
-}
 
 function removeElementFromList(list, item) {
     for (var i = list.length - 1; i >= 0; i--) {
