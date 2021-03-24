@@ -20,4 +20,6 @@ public interface ICertificateService {
 	Certificate createCert(CreateCertificateDTO ccdto);
 	
 	List<PublicKeysDTO> getAvailablePublicKeys(String email);
+
+	byte[] certDownloader(Long ssn);
 }

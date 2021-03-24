@@ -2,11 +2,15 @@ package rs.ac.uns.ftn.e2.onee2team.security.pki.service;
 
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.bouncycastle.asn1.x500.X500NameBuilder;
+import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +28,10 @@ import rs.ac.uns.ftn.e2.onee2team.security.pki.repository.ICertificateRepository
 import rs.ac.uns.ftn.e2.onee2team.security.pki.repository.IKeyVaultRepository;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.repository.IUserRepository;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.util.Base64Utility;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.util.CertificateGenerator;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.util.IssuerData;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.util.RSA;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.util.SubjectData;
 
 @Service
 public class CertificateService implements ICertificateService {
@@ -139,5 +146,43 @@ public class CertificateService implements ICertificateService {
 			pbkdto.add(temp);
 		}
 		return pbkdto;
+	}
+	
+	@Override
+	public byte[] certDownloader(Long ssn) {
+		Certificate cert = certificateRepository.findBySerialNumber(ssn);
+		Certificate issuerCert = certificateRepository.findCurrentValidCertificateByIssuerAndSubjectCertDates(cert.getIssuer(), cert.getStartDate(), cert.getEndDate());
+		KeyVault isssuerkv = keyVaultRepository.findByPublicKey(issuerCert.getPublicKey());
+		X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
+	    builder.addRDN(BCStyle.CN, issuerCert.getSubject().getCommonName());
+	    builder.addRDN(BCStyle.O, issuerCert.getSubject().getUserSubject().getOrganization());
+	    builder.addRDN(BCStyle.OU, issuerCert.getSubject().getUserSubject().getOrganizationalUnit());
+	    builder.addRDN(BCStyle.C, issuerCert.getSubject().getUserSubject().getCountry());
+	    builder.addRDN(BCStyle.ST, issuerCert.getSubject().getUserSubject().getState());
+	    builder.addRDN(BCStyle.L, issuerCert.getSubject().getUserSubject().getLocality());
+	    User issuer = userRepository.findUserByUserDefinedSubject(issuerCert.getSubject().getUserSubject());
+	    builder.addRDN(BCStyle.E, issuer.getEmail());
+	    builder.addRDN(BCStyle.UID, issuer.getId().toString());
+		IssuerData issuerData = new IssuerData(isssuerkv.getPrivateKey(), builder.build());
+		builder = new X500NameBuilder(BCStyle.INSTANCE);
+	    builder.addRDN(BCStyle.CN, cert.getSubject().getCommonName());
+	    builder.addRDN(BCStyle.O, cert.getSubject().getUserSubject().getOrganization());
+	    builder.addRDN(BCStyle.OU, cert.getSubject().getUserSubject().getOrganizationalUnit());
+	    builder.addRDN(BCStyle.C, cert.getSubject().getUserSubject().getCountry());
+	    builder.addRDN(BCStyle.ST, cert.getSubject().getUserSubject().getState());
+	    builder.addRDN(BCStyle.L, cert.getSubject().getUserSubject().getLocality());
+	    User subject = userRepository.findUserByUserDefinedSubject(cert.getSubject().getUserSubject());
+	    builder.addRDN(BCStyle.E, subject.getEmail());
+	    builder.addRDN(BCStyle.UID, subject.getId().toString());
+	    SubjectData subjectData = new SubjectData(cert.getPublicKey(), builder.build(), cert.getSerialNumber().toString(), cert.getStartDate(), cert.getEndDate());
+	    CertificateGenerator cg = new CertificateGenerator();
+		X509Certificate ret = cg.generateCertificate(subjectData, issuerData);
+		System.out.println(ret);
+		try {
+			return ret.getEncoded();
+		} catch (CertificateEncodingException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 }
