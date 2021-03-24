@@ -30,6 +30,10 @@ public class CertificateService implements ICertificateService {
 	private ICertificateRepository certificateRepository;
 	private IUserRepository userRepository;
 	private IKeyVaultRepository keyVaultRepository;
+	
+	private final Long ROOT_MAX_VALUE = 315569520000L; // 10 years
+	private final Long INTERMEDIATE_MAX_VALUE = 157784760000L; // 5 years
+	private final Long END_ENTITY_MAX_VALUE = 31556952000L; // 1 year
 
 	@Autowired
 	public CertificateService(ICertificateRepository certificateRepository, IUserRepository userRepository, IKeyVaultRepository keyVaultRepository) {
@@ -110,8 +114,28 @@ public class CertificateService implements ICertificateService {
 
 	@Override
 	public Boolean isIssuerValid(CreateCertificateDTO certificate) {
+		if(!validDates(certificate.getStartDate(), certificate.getEndDate(), certificate.getType()))
+			return false;
 		Certificate issuer = certificateRepository.findBySerialNumber(certificate.getIssuerSerialNumber());		
 		return issuer.canBeIssuerForDateRange(certificate.getStartDate(), certificate.getEndDate());
+	}
+	
+	private Boolean validDates(Date start, Date end, CertificateType type) {
+		if(end.before(start) || start.before(new Date()))
+			return false;
+		if(type.equals(CertificateType.ROOT)) {
+			if ((start.getTime() + ROOT_MAX_VALUE) < end.getTime()) 
+				return false;
+		}
+		else if(type.equals(CertificateType.INTERMEDIATE)) {
+			if ((start.getTime() + INTERMEDIATE_MAX_VALUE) < end.getTime()) 
+				return false;
+		}
+		else if(type.equals(CertificateType.END)) {
+			if ((start.getTime() + END_ENTITY_MAX_VALUE) < end.getTime())
+				return false;
+		}
+		return true;
 	}
 
 	public List<Certificate> allMyCertificates(String email) {
