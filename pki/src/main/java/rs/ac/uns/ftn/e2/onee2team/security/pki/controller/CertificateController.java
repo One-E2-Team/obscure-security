@@ -50,6 +50,13 @@ public class CertificateController {
 		return certificateService.isIssuerValid(certificate);
 	}
 	
+	@GetMapping("/isRevoked/{num}")
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')" + "||"
+			+ "hasRole('ROLE_END_ENTITY')")
+	public boolean isCertificateRevoke(@PathVariable("num") Long serialNumber) {
+		return certificateService.isRevoked(serialNumber);
+	}
+	
 	@PostMapping(value = "/create")
 	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')")
 	public Certificate create(@RequestBody CreateCertificateDTO ccdto) {
