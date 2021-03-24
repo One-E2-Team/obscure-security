@@ -2,6 +2,7 @@ package rs.ac.uns.ftn.e2.onee2team.security.pki.service;
 
 import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.CreateCertificateDTO;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.PublicKeysDTO;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.UserCommonNameDTO;
 
 import java.util.List;
 
@@ -23,4 +24,6 @@ public interface ICertificateService {
 	byte[] certDownloader(Long ssn);
 
 	Boolean isIssuerValid(CreateCertificateDTO certificate, User user);
+	
+	UserCommonNameDTO findUserBySerialNumber(Long serialNumber);
 }

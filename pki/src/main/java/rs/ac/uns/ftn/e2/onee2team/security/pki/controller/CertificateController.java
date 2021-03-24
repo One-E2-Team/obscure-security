@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.CreateCertificateDTO;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.PublicKeysDTO;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.UserCommonNameDTO;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.User;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.service.ICertificateService;
 
@@ -42,6 +43,12 @@ public class CertificateController {
 	public List<Certificate> allMyCertificates(Authentication auth) {
 		User user = (User) auth.getPrincipal();
 		return certificateService.allMyCertificates(user.getEmail());
+	}
+	
+	@GetMapping(value = "/user/{num}")
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')")
+	public UserCommonNameDTO getUserBySerialNumber(@PathVariable("num") Long serialNumber) {
+		return certificateService.findUserBySerialNumber(serialNumber);
 	}
 
 	@PostMapping(value = "/revoke/{num}")
