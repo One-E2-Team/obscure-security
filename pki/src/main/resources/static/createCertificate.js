@@ -1,9 +1,15 @@
 var extensions = []
 var selectedExtensions = []
 var selectedTextId = ""
+var issuer = {}
+var users = []
+
 
 document.addEventListener("DOMContentLoaded", function(event) {
-    startupFunction();
+    collectExtensions();
+    getIssuer();
+    getUsers();
+
     document.getElementById("create-btn").addEventListener("click", function() { createCertificate() });
     document.getElementById("type").addEventListener("change", function() { disablePublicKey() })
     document.getElementById("ch-generate-key").addEventListener("change", function() { disablePublicKey() })
@@ -11,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 });
 
 
-function startupFunction() {
+async function collectExtensions() {
     let xhr = new XMLHttpRequest();
 
     xhr.open("GET", "/api/extensions");
@@ -24,6 +30,40 @@ function startupFunction() {
         }
     };
     xhr.send();
+}
+
+async function getIssuer() {
+    let url = window.location.href;
+    let paramsUrl = url.split('?')[1]
+    let params = paramsUrl.split('&')
+    let issuerSerialId = params[0].split('=')[1];
+    console.log("issuerId = " + issuerSerialId);
+    //TODO getIssuerInfo preko issuerSerialId
+
+}
+
+async function getUsers() {
+    let xhr = new XMLHttpRequest();
+
+    xhr.open("GET", "/api/users");
+    xhr.setRequestHeader("Authorization", "Bearer " + getJWTToken());
+    xhr.responseType = 'json';
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            users = this.response;
+            populateUsers();
+        }
+    };
+    xhr.send();
+}
+
+function populateUsers() {
+    let userSelect = document.getElementById("user");
+    for (let user of users) {
+        let option = document.createElement('option');
+        option.value = user.email;
+        userSelect.appendChild(option);
+    }
 }
 
 function disablePublicKey() {
