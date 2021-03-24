@@ -64,9 +64,4 @@ public class AuthenticationController {
 		// Vrati token kao odgovor na uspesnu autentifikaciju
 		return ResponseEntity.ok(new UserTokenState(jwt, expiresIn, userType, email));
 	}
-	
-	@GetMapping("/all")
-	public Collection<User> getAll(){
-		return userService.getAll();
-	}
 }

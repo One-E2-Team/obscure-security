@@ -12,4 +12,5 @@ public interface IUserRepository extends JpaRepository<User, Long> {
 
 	@Query("select u from User u where u.userSubject = ?1")
 	User findUserByUserDefinedSubject(UserDefinedSubject uds);
+	
 }

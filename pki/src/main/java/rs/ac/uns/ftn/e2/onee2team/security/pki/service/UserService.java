@@ -1,5 +1,6 @@
 package rs.ac.uns.ftn.e2.onee2team.security.pki.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.UserDTO;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.User;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.repository.IUserRepository;
 
@@ -36,7 +38,14 @@ public class UserService implements IUserService {
 	}
 	
 	@Override
-	public List<User> getAll(){
-		return userRepository.findAll();
+	public List<UserDTO> getAll(){
+		List<User> users =  userRepository.findAll();
+		List<UserDTO> ret_list = new ArrayList<UserDTO>();
+		UserDTO dto;
+		for (User u : users) {
+			dto = new UserDTO(u.getEmail(), u.getUserSubject());
+			ret_list.add(dto);
+		}
+		return ret_list;
 	}
 }
