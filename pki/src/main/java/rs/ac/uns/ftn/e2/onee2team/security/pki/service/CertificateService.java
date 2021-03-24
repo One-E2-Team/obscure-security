@@ -99,7 +99,7 @@ public class CertificateService implements ICertificateService {
 				c.setSubject(certExists.get(0).getSubject());
 			else return null;
 		} else {
-			c.setSubject(new CertificateSubject()); // TODO - check existence and appendence
+			c.setSubject(new CertificateSubject());
 			c.getSubject().setUserSubject(u.getUserSubject());
 			c.getSubject().setCommonName(ccdto.getCommonName());
 		}
