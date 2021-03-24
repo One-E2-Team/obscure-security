@@ -20,12 +20,17 @@ async function startupFunction() {
 
 
 function populateCertificates(certificates) {
+  if (getRole() !== 'END_ENTITY') {
+    document.getElementById('add-new').style.display = 'block';
+  } else {
+    document.getElementById('add-new').style.display = 'none';
+  }
   let table = document.getElementById('certificates-table');
   for (let certificate of certificates) {
     let tr = document.createElement('tr');
     tr.appendChild(createTd(certificate.serialNumber));
-    tr.appendChild(createTd(certificate.startDate));
-    tr.appendChild(createTd(certificate.endDate));
+    tr.appendChild(createTd(dateToDDMMYYYY(certificate.startDate)));
+    tr.appendChild(createTd(dateToDDMMYYYY(certificate.endDate)));
     tr.appendChild(createTd(certificate.subject.commonName));
     tr.appendChild(createTd(certificate.subject.userSubject.organization));
     tr.appendChild(createTd(certificate.subject.userSubject.organizationalUnit));
@@ -33,12 +38,13 @@ function populateCertificates(certificates) {
     let tdArea = document.createElement('td');
     let area = document.createElement('textarea');
     area.id = 'area-' + certificate.serialNumber;
+    area.disabled = true;
     tdArea.appendChild(area);
     tr.appendChild(tdArea);
     tr.appendChild(createTd(certificate.type));
     let revoked = certificate.revoked;
     tr.appendChild(createTd(revoked));
-    if (!revoked) {
+    if (!revoked && getRole() === 'ADMINISTRATOR') {
       tr.appendChild(createButtonTd(certificate.serialNumber, 'Revoke'));
     }
     table.appendChild(tr);
@@ -90,7 +96,7 @@ function createTd(text) {
   return td;
 }
 
-async function revoke(){
+async function revoke() {
   let selection = event.target;
   let serialNum = selection.id;
   let xhttp = new XMLHttpRequest();
@@ -112,8 +118,4 @@ function createButtonTd(id, text) {
   button.addEventListener("click", function() { revoke(); });
   tdButton.appendChild(button);
   return tdButton;
-}
-
-function getJWTToken() {
-  return JSON.parse(sessionStorage.getItem('JWT')).accessToken;
 }

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.boot.origin.SystemEnvironmentOrigin;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -50,7 +51,7 @@ public class CertificateController {
 	}
 	
 	@PostMapping("/is-valid")
-	public boolean isCertificateValidate(@RequestBody CreateCertificateDTO certificate) {
+	public Boolean isCertificateValidate(@RequestBody CreateCertificateDTO certificate) {
 		return certificateService.isIssuerValid(certificate);
 	}
 	

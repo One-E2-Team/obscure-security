@@ -1,33 +1,65 @@
 var extensions = []
-var selectedExtension = ""
+var selectedExtensions = []
+var selectedTextId = ""
 
 document.addEventListener("DOMContentLoaded", function(event) {
-    startupFunction(); 
-  });
+    startupFunction();
+    document.getElementById("create-btn").addEventListener("click", function() { createCertificate() });
+    document.getElementById("type").addEventListener("change", function() { showPublicKey() })
+    document.getElementById("update-text-btn").addEventListener("click", function() { updateText(selectedTextId) })
+});
 
-function addExtension(){
-    alert(selectedExtension)
-}
 
-function startupFunction(){
+function startupFunction() {
     let xhr = new XMLHttpRequest();
 
     xhr.open("GET", "/api/extensions");
     xhr.setRequestHeader("Authorization", "Bearer " + getJWTToken());
-    xhr.responseType='json';
+    xhr.responseType = 'json';
     xhr.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             extensions = this.response;
             populateExtensions();
         }
-      };
+    };
     xhr.send();
 }
 
+function showPublicKey() {
+    //TODO: prikaz public key-a na frontu
+    console.log("Zmago je kriv");
+}
 
-function populateExtensions(){
+function createCertificate() {
+
+    let request = {
+        type: document.getElementById('type').value,
+        startDate: document.getElementById('start-date').value,
+        endDate: document.getElementById('end-date').value,
+        email: "",
+        publicKey: "",
+        issuerSerialNumber: "",
+        extensions: getUsedExtensions()
+    }
+    console.log(request);
+}
+
+function getUsedExtensions() {
+    let result = []
+    for (let ext of selectedExtensions) {
+        let el = {
+            extension: ext.text,
+            value: document.getElementById("ext-data" + ext.id).value
+        }
+        result.push(el)
+    }
+    return result;
+}
+
+
+function populateExtensions() {
     let table = document.getElementById('availableExtensions');
-    for(let ext of extensions){
+    for (let ext of extensions) {
         let tr = document.createElement('tr');
         let td = document.createElement('td');
         td.innerText = ext.name;
@@ -35,33 +67,81 @@ function populateExtensions(){
         table.appendChild(tr);
     }
 
-    table.addEventListener('click', function (item) {
+    table.addEventListener('click', function(item) {
         selectRow(item)
     });
 
 }
 
 
-function selectRow(item){
-  
-        var row = item.path[1];
+function selectRow(item) {
 
-        for (var j = 0; j < row.cells.length; j++) {
+    var row = item.path[1];
+    let selectedRow;
+    for (var j = 0; j < row.cells.length; j++) {
 
-            selectedExtension += row.cells[j].innerHTML;
+        selectedRow = {
+            id: row.rowIndex,
+            text: row.cells[j].innerHTML
         }
-
-        if (row.classList.contains('highlight')){
-            row.classList.remove('highlight');
-            selectedExtension = "";
-        }
-        else{
-            
-            row.classList.add('highlight');
-            document.getElementById("btn-add-cert").addEventListener("click", alert(selectedExtension));
-        }
+    };
+    if (row.classList.contains('highlight')) {
+        row.classList.remove('highlight');
+        removeExtensionToCertificate(selectedRow.id);
+        selectedExtensions = removeElementFromList(selectedExtensions, selectedRow);
+    } else {
+        row.classList.add('highlight');
+        selectedExtensions.push(selectedRow)
+        addExtensionToCertificate(selectedRow);
+    }
+    console.log(selectedExtensions)
 }
 
-function getJWTToken() {
-    return JSON.parse(sessionStorage.getItem('JWT')).accessToken;
+function addExtensionToCertificate(item) {
+    let table = document.getElementById('certificate-form');
+    let tr = document.createElement('tr');
+    tr.setAttribute("id", "extension-" + item.id)
+
+    let td1 = document.createElement('td');
+    td1.innerText = item.text;
+    tr.appendChild(td1);
+
+    let td2 = document.createElement('td');
+    td2.appendChild(createDisabledInputTextWithClickEvent(item.id))
+    tr.appendChild(td2);
+    table.appendChild(tr);
+}
+
+function createDisabledInputTextWithClickEvent(id) {
+    let input = document.createElement('input');
+    input.type = "text"
+    input.setAttribute("id", "ext-data" + id);
+    input.addEventListener("click", function() { addTextToTextArea("ext-data" + id); })
+    return input;
+}
+
+function addTextToTextArea(elementId) {
+    let el = document.getElementById(elementId);
+    selectedTextId = elementId;
+    document.getElementById("ta-description").innerText = el.value;
+}
+
+function updateText(selectedTextId) {
+    let el = document.getElementById(selectedTextId);
+    el.value = document.getElementById("ta-description").value;
+}
+
+function removeExtensionToCertificate(id) {
+    var elem = document.getElementById('extension-' + id);
+    elem.parentNode.removeChild(elem);
+}
+
+
+function removeElementFromList(list, item) {
+    for (var i = list.length - 1; i >= 0; i--) {
+        if (list[i].id === item.id) {
+            list.splice(i, 1);
+        }
+    }
+    return list;
 }
