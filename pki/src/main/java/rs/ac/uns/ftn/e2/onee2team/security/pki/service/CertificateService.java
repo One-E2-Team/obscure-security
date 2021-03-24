@@ -42,7 +42,7 @@ public class CertificateService implements ICertificateService {
 	
 	private final Long ROOT_MAX_VALUE = 315569520000L; // 10 years
 	private final Long INTERMEDIATE_MAX_VALUE = 157784760000L; // 5 years
-	private final Long END_ENTITY_MAX_VALUE = 31556952000L; // 1 year
+	private final Long END_ENTITY_MAX_VALUE = 63113904000L; // 2 years
 
 	@Autowired
 	public CertificateService(ICertificateRepository certificateRepository, IUserRepository userRepository, IKeyVaultRepository keyVaultRepository) {
@@ -83,12 +83,26 @@ public class CertificateService implements ICertificateService {
 	public Certificate createCert(CreateCertificateDTO ccdto) {
 		Certificate c = new Certificate();
 		User u = userRepository.findByEmail(ccdto.getEmail());
-		Certificate issuer = certificateRepository.findBySerialNumber(ccdto.getIssuerSerialNumber());
-		if(u == null || issuer == null) return null;
-		c.setSubject(new CertificateSubject()); // TODO - check existence and appendence
-		c.getSubject().setUserSubject(u.getUserSubject());
-		c.getSubject().setCommonName(ccdto.getCommonName());
-		c.setIssuer(issuer.getSubject());
+		if(ccdto.getType() == CertificateType.ROOT) {
+			CertificateSubject cs = new CertificateSubject();
+			cs.setCommonName(ccdto.getCommonName());
+			cs.setUserSubject(u.getUserSubject());
+			c.setIssuer(cs);
+		} else {
+			Certificate issuer = certificateRepository.findBySerialNumber(ccdto.getIssuerSerialNumber());
+			c.setIssuer(issuer.getSubject());
+		}
+		if(u == null) return null;
+		List<Certificate> certExists = certificateRepository.findAllOrderedDescStartDateByCNAndUserDefinedSubject(ccdto.getCommonName(), u.getUserSubject());
+		if(certExists.size() != 0) {
+			if(certExists.get(0).getEndDate().compareTo(ccdto.getStartDate()) <= 0)
+				c.setSubject(certExists.get(0).getSubject());
+			else return null;
+		} else {
+			c.setSubject(new CertificateSubject());
+			c.getSubject().setUserSubject(u.getUserSubject());
+			c.getSubject().setCommonName(ccdto.getCommonName());
+		}
 		c.setSerialNumber(UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE);
 		c.setRevoked(false);
 		c.setStartDate(ccdto.getStartDate());
@@ -109,24 +123,52 @@ public class CertificateService implements ICertificateService {
 			} else if(key.getValidUntil().after(ccdto.getEndDate())){
 				c.setPublicKey(pk);
 			} else return null;
-		} else {
+		} else if(ccdto.getType() == CertificateType.ROOT || (ccdto.getType() == CertificateType.INTERMEDIATE && (ccdto.getPublicKey() == null || ccdto.getPublicKey() == ""))) {
 			KeyPair kp = RSA.generateKeys();
 			KeyVault kv = new KeyVault();
 			kv.setPrivateKey(kp.getPrivate());
 			kv.setPublicKey(kp.getPublic());
-			kv.setValidUntil(new Date((new Date()).getTime() + 315360000000L));
+			Long validity = ccdto.getType() != CertificateType.INTERMEDIATE ? 315360000000L : 315360000000L /2;
+			kv.setValidUntil(new Date((new Date()).getTime() + validity));
 			kv = keyVaultRepository.save(kv);
 			c.setPublicKey(kv.getPublicKey());
-		}
+		} else if(ccdto.getType() == CertificateType.INTERMEDIATE) {
+			KeyVault kv = keyVaultRepository.findByPublicKey((new PublicKeyConverter()).convertToEntityAttribute(ccdto.getPublicKey()));
+			if(kv.getValidUntil().compareTo(ccdto.getEndDate()) > 0) return null;
+			c.setPublicKey(kv.getPublicKey());
+		} else return null;
 		return certificateRepository.save(c);
 	}
 
 	@Override
-	public Boolean isIssuerValid(CreateCertificateDTO certificate) {
-		if(!validDates(certificate.getStartDate(), certificate.getEndDate(), certificate.getType()))
+	public Boolean isIssuerValid(CreateCertificateDTO certificate, User user) {
+		if(!validDates(certificate.getStartDate(), certificate.getEndDate(), certificate.getType()) || 
+				!validUserRole(certificate.getEmail(), certificate.getIssuerSerialNumber(), certificate.getType()))
+			return false;
+		if(user.getUserType().equals(UserType.INTERMEDIARY_CA) && !validIntermediary(user, certificate.getIssuerSerialNumber()))
 			return false;
 		Certificate issuer = certificateRepository.findBySerialNumber(certificate.getIssuerSerialNumber());		
 		return issuer.canBeIssuerForDateRange(certificate.getStartDate(), certificate.getEndDate());
+	}
+	
+	private Boolean validIntermediary(User user, Long serialNumber) {
+		return user.getUserSubject().getId().equals
+				(certificateRepository.findBySerialNumber(serialNumber).getSubject().getUserSubject().getId());
+	}
+	
+	private Boolean validUserRole(String email, Long issuerSerialNumber, CertificateType type) {
+		User u = userRepository.findByEmail(email);
+		if(type.equals(CertificateType.ROOT)) {
+			if (!u.getUserType().equals(UserType.ADMINISTRATOR))
+				return false;
+		}
+		else {
+			if(certificateRepository.findBySerialNumber(issuerSerialNumber).getType().equals(CertificateType.END))
+				return false;
+			if(type.equals(CertificateType.INTERMEDIATE) && u.getUserType().equals(UserType.END_ENTITY))
+				return false;
+		}
+		return true;
 	}
 	
 	private Boolean validDates(Date start, Date end, CertificateType type) {
