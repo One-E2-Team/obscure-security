@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.CreateCertificateDTO;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.PublicKeysDTO;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.UserCommonNameDTO;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.Certificate;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.CertificateExtension;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.CertificateSubject;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.CertificateType;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.UserDefinedSubject;
@@ -30,6 +32,7 @@ import rs.ac.uns.ftn.e2.onee2team.security.pki.repository.IKeyVaultRepository;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.repository.IUserRepository;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.util.Base64Utility;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.util.CertificateGenerator;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.util.ExtensionFormat;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.util.IssuerData;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.util.RSA;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.util.SubjectData;
@@ -251,8 +254,16 @@ public class CertificateService implements ICertificateService {
 	    builder.addRDN(BCStyle.E, subject.getEmail());
 	    builder.addRDN(BCStyle.UID, subject.getId().toString());
 	    SubjectData subjectData = new SubjectData(cert.getPublicKey(), builder.build(), cert.getSerialNumber().toString(), cert.getStartDate(), cert.getEndDate());
+	    ArrayList<ExtensionFormat> ef = new ArrayList<ExtensionFormat>();
+	    for (Integer i = 0; i < cert.getExtensions().size(); i++) {
+			ExtensionFormat temp = new ExtensionFormat();
+			temp.setCritical(false);
+			temp.setField(new ASN1ObjectIdentifier("1.2.3.4.5.6.7.8." + i.toString()));
+			temp.setValue(cert.getExtensions().get(i).getValue().getBytes());
+			ef.add(temp);
+		}
 	    CertificateGenerator cg = new CertificateGenerator();
-		X509Certificate ret = cg.generateCertificate(subjectData, issuerData);
+		X509Certificate ret = cg.generateCertificate(subjectData, issuerData, ef);
 		System.out.println(ret);
 		try {
 			return ret.getEncoded();
