@@ -18,6 +18,7 @@ async function startupFunction() {
   xhttp.send();
 }
 
+
 function populateCertificates(certificates) {
   let table = document.getElementById('certificates-table');
   for (let certificate of certificates) {
@@ -89,12 +90,26 @@ function createTd(text) {
   return td;
 }
 
+async function revoke(){
+  let selection = event.target;
+  let serialNum = selection.id;
+  let xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      location.reload();
+    }
+  };
+  xhttp.open("POST", "/api/certificates/revoke/" + serialNum, true);
+  xhttp.setRequestHeader("Authorization", "Bearer " + getJWTToken());
+  xhttp.send();
+}
+
 function createButtonTd(id, text) {
   let tdButton = document.createElement('td');
   let button = document.createElement('button');
-  button.type = "submit";
   button.id = id;
   button.innerText = text;
+  button.addEventListener("click", function() { revoke(); });
   tdButton.appendChild(button);
   return tdButton;
 }

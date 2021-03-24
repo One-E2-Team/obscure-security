@@ -2,6 +2,7 @@ package rs.ac.uns.ftn.e2.onee2team.security.pki.service;
 
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.CreateCertificateDTO;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.PublicKeysDTO;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.Certificate;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.CertificateSubject;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.CertificateType;
@@ -120,5 +122,22 @@ public class CertificateService implements ICertificateService {
 			return certificateRepository.findAll();
 		}
 		return certificateRepository.findCertificatesByUserSubject(user.getUserSubject());
+	}
+
+	@Override
+	public List<PublicKeysDTO> getAvailablePublicKeys(String email) {
+		User u = userRepository.findByEmail(email);
+		List<Certificate> cs = certificateRepository.findTrustedValidCertificatesByUserSubjectInSubject(u.getUserSubject());
+		ArrayList<PublicKeysDTO> pbkdto = new ArrayList<PublicKeysDTO>();
+		for (Certificate c : cs) {
+			KeyVault kv = keyVaultRepository.findByPublicKey(c.getPublicKey());
+			PublicKeysDTO temp = new PublicKeysDTO();
+			temp.setPublicKey(Base64Utility.encode(kv.getPublicKey().getEncoded()));
+			temp.setValidUntil(kv.getValidUntil());
+			if(kv.getPrivateKey() != null) temp.setHasPrivate(true);
+			else temp.setHasPrivate(false);
+			pbkdto.add(temp);
+		}
+		return pbkdto;
 	}
 }

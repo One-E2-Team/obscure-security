@@ -19,4 +19,7 @@ public interface ICertificateRepository extends JpaRepository<Certificate, Long>
 			+ "c.revoked = false and c.endDate > CURRENT_TIMESTAMP")
 	public List<Certificate> findCertificatesByUserSubject(UserDefinedSubject userSubject);
 
+	@Query("select c from Certificate c where c.subject.userSubject = ?1 and "
+			+ "c.revoked = false and c.endDate > CURRENT_TIMESTAMP")
+	public List<Certificate> findTrustedValidCertificatesByUserSubjectInSubject(UserDefinedSubject userSubject);
 }

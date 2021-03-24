@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.CreateCertificateDTO;
-
+import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.PublicKeysDTO;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.User;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.service.ICertificateService;
 
@@ -50,6 +50,13 @@ public class CertificateController {
 		return certificateService.isIssuerValid(certificate);
 	}
 	
+	@GetMapping("/isRevoked/{num}")
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')" + "||"
+			+ "hasRole('ROLE_END_ENTITY')")
+	public boolean isCertificateRevoke(@PathVariable("num") Long serialNumber) {
+		return certificateService.isRevoked(serialNumber);
+	}
+	
 	@PostMapping(value = "/create")
 	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')")
 	public Certificate create(@RequestBody CreateCertificateDTO ccdto) {
@@ -58,5 +65,11 @@ public class CertificateController {
 		if(certificateService.isIssuerValid(ccdto))
 			return certificateService.createCert(ccdto);
 		else return null;
+	}
+	
+	@GetMapping(value = "/issuerpubkeys")
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')")
+	public List<PublicKeysDTO> getPubKeys(@RequestBody String email) {
+		return certificateService.getAvailablePublicKeys(email);
 	}
 }
