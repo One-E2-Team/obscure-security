@@ -50,11 +50,6 @@ public class CertificateController {
 		certificateService.revoke(serialNumber);
 	}
 	
-	@PostMapping("/is-valid")
-	public Boolean isCertificateValidate(@RequestBody CreateCertificateDTO certificate) {
-		return certificateService.isIssuerValid(certificate);
-	}
-	
 	@GetMapping("/isRevoked/{num}")
 	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')" + "||"
 			+ "hasRole('ROLE_END_ENTITY')")
@@ -64,10 +59,9 @@ public class CertificateController {
 	
 	@PostMapping(value = "/create")
 	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')")
-	public Certificate create(@RequestBody CreateCertificateDTO ccdto) {
-		System.out.println(ccdto.getStartDate());
-		System.out.println(ccdto.getEndDate());
-		if(certificateService.isIssuerValid(ccdto))
+	public Certificate create(@RequestBody CreateCertificateDTO ccdto, Authentication auth) {
+		User user = (User) auth.getPrincipal();
+		if(certificateService.isIssuerValid(ccdto, user))
 			return certificateService.createCert(ccdto);
 		else return null;
 	}
