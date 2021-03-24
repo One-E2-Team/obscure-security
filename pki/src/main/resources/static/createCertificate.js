@@ -12,13 +12,18 @@ document.addEventListener("DOMContentLoaded", function(event) {
     getUsers();
 
     document.getElementById("create-btn").addEventListener("click", function() { createCertificate() });
-    document.getElementById("type").addEventListener("change", function() { disablePublicKey() });
+    document.getElementById("type").addEventListener("change", function() { changeType() });
     document.getElementById("ch-generate-key").addEventListener("change", function() {
         if (document.getElementById("ch-generate-key").checked) {
             generatePublicKey();
         }
-        disablePublicKey()
+        if (isType("END"))
+            document.getElementById("public-key").disabled = document.getElementById("ch-generate-key").checked ? true : false;
     });
+    document.getElementById("ch-generate-key").addEventListener("change", function() {
+        if (document.getElementById("ch-generate-key").checked == false)
+            document.getElementById("generated-keys").innerHTML = "";
+    })
     document.getElementById("update-text-btn").addEventListener("click", function() { updateText(selectedTextId) });
     document.getElementById("user").addEventListener("change", function() {
         let email = document.getElementById("user").value;
@@ -34,13 +39,20 @@ function generatePublicKey() {
     xhr.responseType = 'json';
     xhr.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            pubKey = this.response[0];
-            console.log(pubKey.publicKey)
-            document.getElementById('public-key').value = pubKey.publicKey
-            console.log(this.response);
+            populatePublicKeys(this.response);
         }
     };
     xhr.send(document.getElementById('user').value);
+}
+
+function populatePublicKeys(keys) {
+    let keySelect = document.getElementById("generated-keys");
+    for (let key of keys) {
+        let option = document.createElement('option');
+        option.value = key.publicKey;
+        option.innerText = key.validUntil;
+        keySelect.appendChild(option);
+    }
 }
 
 function getUserByEmail(email) {
@@ -48,6 +60,13 @@ function getUserByEmail(email) {
         if (user.email == email) return user;
     }
     return null;
+}
+
+function setElementVisibility(element, visible) {
+    if (visible)
+        element.style.display = "block";
+    else
+        element.style.display = "none";;
 }
 
 function showInTextArea(object) {
@@ -125,16 +144,30 @@ function populateUsers() {
     }
 }
 
-function disablePublicKey() {
-    document.getElementById("public-key").disabled = publicKeyShouldBeDisabled();
+
+function changeType() {
+    let pk = document.getElementById("public-key")
+    pk.value = "";
+    pk.disabled = !isType("END");
+    setElementVisibility(document.getElementById("checks"), !isType("ROOT"));
+    setElementVisibility(document.getElementById("generated-keys"), !isType("ROOT"));
+    document.getElementById("ch-generate-key").checked = false;
+    document.getElementById("generated-keys").innerHTML = "";
 }
 
-function publicKeyShouldBeDisabled() {
-    return document.getElementById("type").value == "ROOT" || document.getElementById("ch-generate-key").checked
+function isType(type) {
+    return document.getElementById("type").value == type
 }
 
 function createCertificate() {
-    let pubkey = publicKeyShouldBeDisabled() ? "" : document.getElementById("public-key").value
+    let pubkey;
+    if (isType("ROOT"))
+        pubkey = "";
+    else if (isType("INTERMEDIATE")) {
+        pubkey = document.getElementById("ch-generate-key").checked ? document.getElementById("generated-keys").value : "";
+    } else {
+        pubkey = document.getElementById("ch-generate-key").checked ? document.getElementById("generated-keys").value : document.getElementById("public-key").value;
+    }
     let request = {
         type: document.getElementById('type').value,
         startDate: document.getElementById('start-date').value,
