@@ -5,7 +5,8 @@ var selectedTextId = ""
 document.addEventListener("DOMContentLoaded", function(event) {
     startupFunction();
     document.getElementById("create-btn").addEventListener("click", function() { createCertificate() });
-    document.getElementById("type").addEventListener("change", function() { showPublicKey() })
+    document.getElementById("type").addEventListener("change", function() { disablePublicKey() })
+    document.getElementById("ch-generate-key").addEventListener("change", function() { disablePublicKey() })
     document.getElementById("update-text-btn").addEventListener("click", function() { updateText(selectedTextId) })
 });
 
@@ -25,19 +26,22 @@ function startupFunction() {
     xhr.send();
 }
 
-function showPublicKey() {
-    //TODO: prikaz public key-a na frontu
-    console.log("Zmago je kriv");
+function disablePublicKey() {
+    document.getElementById("public-key").disabled = publicKeyShouldBeDisabled();
+}
+
+function publicKeyShouldBeDisabled() {
+    return document.getElementById("type").value == "ROOT" || document.getElementById("ch-generate-key").checked
 }
 
 function createCertificate() {
-
+    let pubkey = publicKeyShouldBeDisabled() ? "" : document.getElementById("public-key").value
     let request = {
         type: document.getElementById('type').value,
         startDate: document.getElementById('start-date').value,
         endDate: document.getElementById('end-date').value,
         email: "",
-        publicKey: "",
+        publicKey: pubkey,
         issuerSerialNumber: "",
         extensions: getUsedExtensions()
     }
