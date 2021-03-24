@@ -1,46 +1,65 @@
 var extensions = []
-var selectedExtension = []
+var selectedExtensions = []
 var selectedTextId = ""
 
 document.addEventListener("DOMContentLoaded", function(event) {
-    startupFunction(); 
-    document.getElementById("create-btn").addEventListener("click",function() {createCertificate()});
-    document.getElementById("update-text-btn").addEventListener("click", function(){updateText(selectedTextId)})
-  });
+    startupFunction();
+    document.getElementById("create-btn").addEventListener("click", function() { createCertificate() });
+    document.getElementById("type").addEventListener("change", function() { showPublicKey() })
+    document.getElementById("update-text-btn").addEventListener("click", function() { updateText(selectedTextId) })
+});
 
-function addExtensions(){
-    console.log(selectedExtension)
-}
 
-function startupFunction(){
+function startupFunction() {
     let xhr = new XMLHttpRequest();
 
     xhr.open("GET", "/api/extensions");
     xhr.setRequestHeader("Authorization", "Bearer " + getJWTToken());
-    xhr.responseType='json';
+    xhr.responseType = 'json';
     xhr.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             extensions = this.response;
             populateExtensions();
         }
-      };
+    };
     xhr.send();
 }
 
-function createCertificate(){
+function showPublicKey() {
+    //TODO: prikaz public key-a na frontu
+    console.log("Zmago je kriv");
+}
+
+function createCertificate() {
+
     let request = {
-        type : document.getElementById('type').value,
-        parent: document.getElementById('parent').innerText,
+        type: document.getElementById('type').value,
         startDate: document.getElementById('start-date').value,
-        endDate : document.getElementById('end-date').value,
+        endDate: document.getElementById('end-date').value,
+        email: "",
+        publicKey: "",
+        issuerSerialNumber: "",
+        extensions: getUsedExtensions()
     }
     console.log(request);
 }
 
+function getUsedExtensions() {
+    let result = []
+    for (let ext of selectedExtensions) {
+        let el = {
+            extension: ext.text,
+            value: document.getElementById("ext-data" + ext.id).value
+        }
+        result.push(el)
+    }
+    return result;
+}
 
-function populateExtensions(){
+
+function populateExtensions() {
     let table = document.getElementById('availableExtensions');
-    for(let ext of extensions){
+    for (let ext of extensions) {
         let tr = document.createElement('tr');
         let td = document.createElement('td');
         td.innerText = ext.name;
@@ -48,40 +67,41 @@ function populateExtensions(){
         table.appendChild(tr);
     }
 
-    table.addEventListener('click', function (item) {
+    table.addEventListener('click', function(item) {
         selectRow(item)
     });
 
 }
 
 
-function selectRow(item){
-  
-        var row = item.path[1];
-        let selectedRow ;
-        for (var j = 0; j < row.cells.length; j++) {
+function selectRow(item) {
 
-            selectedRow = {
-                id : row.rowIndex,
-                text: row.cells[j].innerHTML}
-        };
-        console.log(selectedRow)
-        if (row.classList.contains('highlight')){
-            row.classList.remove('highlight');
-            removeExtensionToCertificate(selectedRow.id);
-            
+    var row = item.path[1];
+    let selectedRow;
+    for (var j = 0; j < row.cells.length; j++) {
+
+        selectedRow = {
+            id: row.rowIndex,
+            text: row.cells[j].innerHTML
         }
-        else{           
-            row.classList.add('highlight');
-            addExtensionToCertificate(selectedRow);
-        }
+    };
+    if (row.classList.contains('highlight')) {
+        row.classList.remove('highlight');
+        removeExtensionToCertificate(selectedRow.id);
+        selectedExtensions = removeElementFromList(selectedExtensions, selectedRow);
+    } else {
+        row.classList.add('highlight');
+        selectedExtensions.push(selectedRow)
+        addExtensionToCertificate(selectedRow);
+    }
+    console.log(selectedExtensions)
 }
 
-function addExtensionToCertificate(item){
+function addExtensionToCertificate(item) {
     let table = document.getElementById('certificate-form');
     let tr = document.createElement('tr');
-    tr.setAttribute("id","extension-"+item.id)
-    
+    tr.setAttribute("id", "extension-" + item.id)
+
     let td1 = document.createElement('td');
     td1.innerText = item.text;
     tr.appendChild(td1);
@@ -92,30 +112,39 @@ function addExtensionToCertificate(item){
     table.appendChild(tr);
 }
 
-function createDisabledInputTextWithClickEvent(id){
+function createDisabledInputTextWithClickEvent(id) {
     let input = document.createElement('input');
-    input.type="text"
-    input.setAttribute("id","ext-data"+id);
-    input.addEventListener("click", function(){ addTextToTextArea("ext-data"+id) ;})
+    input.type = "text"
+    input.setAttribute("id", "ext-data" + id);
+    input.addEventListener("click", function() { addTextToTextArea("ext-data" + id); })
     return input;
 }
 
-function addTextToTextArea(elementId){
+function addTextToTextArea(elementId) {
     let el = document.getElementById(elementId);
     selectedTextId = elementId;
     document.getElementById("ta-description").innerText = el.value;
 }
 
-function updateText(selectedTextId){
+function updateText(selectedTextId) {
     let el = document.getElementById(selectedTextId);
     el.value = document.getElementById("ta-description").value;
 }
 
-function removeExtensionToCertificate(id){
-    var elem = document.getElementById('extension-'+id);
+function removeExtensionToCertificate(id) {
+    var elem = document.getElementById('extension-' + id);
     elem.parentNode.removeChild(elem);
 }
 
 function getJWTToken() {
     return JSON.parse(sessionStorage.getItem('JWT')).accessToken;
+}
+
+function removeElementFromList(list, item) {
+    for (var i = list.length - 1; i >= 0; i--) {
+        if (list[i].id === item.id) {
+            list.splice(i, 1);
+        }
+    }
+    return list;
 }
