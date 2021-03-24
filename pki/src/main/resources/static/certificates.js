@@ -45,11 +45,26 @@ function populateCertificates(certificates) {
     let revoked = certificate.revoked;
     tr.appendChild(createTd(revoked));
     if (!revoked && getRole() === 'ADMINISTRATOR') {
-      tr.appendChild(createButtonTd(certificate.serialNumber, 'Revoke'));
+      tr.appendChild(createButtonTd(certificate.serialNumber, 'Revoke', revoke));
+      tr.appendChild(createButtonTd(certificate.serialNumber + "c", 'Create', createCertificate));
     }
+    //tr.appendChild(createButtonTd(certificate.serialNumber, 'Download', download));
+    let td = document.createElement('td');
+    let a = document.createElement('a');
+    a.href = "/api/certificates/download/" + certificate.serialNumber;
+    a.innerText = 'Download';
+    a.setAttribute('download', certificate.serialNumber + '.cer');
+    td.appendChild(a);
+    tr.appendChild(td);
     table.appendChild(tr);
   }
 
+}
+
+function createCertificate() {
+  let serialNumber = event.target.id
+  serialNumber = serialNumber.substring(0, serialNumber.length - 1);
+  window.location.href = '/newCertificate.html?serial-number=' + serialNumber;
 }
 
 function createSelectTd(certificate) {
@@ -110,12 +125,21 @@ async function revoke() {
   xhttp.send();
 }
 
-function createButtonTd(id, text) {
+async function download() {
+  let serialNumber = event.target.id;
+  serialNumber = serialNumber.substring(0, serialNumber.length - 1);
+  let xhttp = new XMLHttpRequest();
+  xhttp.open("GET", "/api/certificates/download/" + serialNumber, true);
+  xhttp.setRequestHeader("Authorization", "Bearer " + getJWTToken());
+  xhttp.send();
+}
+
+function createButtonTd(id, text, fun) {
   let tdButton = document.createElement('td');
   let button = document.createElement('button');
   button.id = id;
   button.innerText = text;
-  button.addEventListener("click", function() { revoke(); });
+  button.addEventListener("click", function() { fun() });
   tdButton.appendChild(button);
   return tdButton;
 }

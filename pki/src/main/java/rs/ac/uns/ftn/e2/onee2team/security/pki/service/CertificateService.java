@@ -42,7 +42,7 @@ public class CertificateService implements ICertificateService {
 	
 	private final Long ROOT_MAX_VALUE = 315569520000L; // 10 years
 	private final Long INTERMEDIATE_MAX_VALUE = 157784760000L; // 5 years
-	private final Long END_ENTITY_MAX_VALUE = 31556952000L; // 1 year
+	private final Long END_ENTITY_MAX_VALUE = 63113904000L; // 2 years
 
 	@Autowired
 	public CertificateService(ICertificateRepository certificateRepository, IUserRepository userRepository, IKeyVaultRepository keyVaultRepository) {
@@ -141,11 +141,34 @@ public class CertificateService implements ICertificateService {
 	}
 
 	@Override
-	public Boolean isIssuerValid(CreateCertificateDTO certificate) {
-		if(!validDates(certificate.getStartDate(), certificate.getEndDate(), certificate.getType()))
+	public Boolean isIssuerValid(CreateCertificateDTO certificate, User user) {
+		if(!validDates(certificate.getStartDate(), certificate.getEndDate(), certificate.getType()) || 
+				!validUserRole(certificate.getEmail(), certificate.getIssuerSerialNumber(), certificate.getType()))
+			return false;
+		if(user.getUserType().equals(UserType.INTERMEDIARY_CA) && !validIntermediary(user, certificate.getIssuerSerialNumber()))
 			return false;
 		Certificate issuer = certificateRepository.findBySerialNumber(certificate.getIssuerSerialNumber());		
 		return issuer.canBeIssuerForDateRange(certificate.getStartDate(), certificate.getEndDate());
+	}
+	
+	private Boolean validIntermediary(User user, Long serialNumber) {
+		return user.getUserSubject().getId().equals
+				(certificateRepository.findBySerialNumber(serialNumber).getSubject().getUserSubject().getId());
+	}
+	
+	private Boolean validUserRole(String email, Long issuerSerialNumber, CertificateType type) {
+		User u = userRepository.findByEmail(email);
+		if(type.equals(CertificateType.ROOT)) {
+			if (!u.getUserType().equals(UserType.ADMINISTRATOR))
+				return false;
+		}
+		else {
+			if(certificateRepository.findBySerialNumber(issuerSerialNumber).getType().equals(CertificateType.END))
+				return false;
+			if(type.equals(CertificateType.INTERMEDIATE) && u.getUserType().equals(UserType.END_ENTITY))
+				return false;
+		}
+		return true;
 	}
 	
 	private Boolean validDates(Date start, Date end, CertificateType type) {
