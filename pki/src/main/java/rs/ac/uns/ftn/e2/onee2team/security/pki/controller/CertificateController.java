@@ -49,4 +49,14 @@ public class CertificateController {
 	public boolean isCertificateValidate(@RequestBody CreateCertificateDTO certificate) {
 		return certificateService.isIssuerValid(certificate);
 	}
+	
+	@PostMapping(value = "/create")
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')")
+	public Certificate create(@RequestBody CreateCertificateDTO ccdto) {
+		System.out.println(ccdto.getStartDate());
+		System.out.println(ccdto.getEndDate());
+		if(certificateService.isIssuerValid(ccdto))
+			return certificateService.createCert(ccdto);
+		else return null;
+	}
 }
