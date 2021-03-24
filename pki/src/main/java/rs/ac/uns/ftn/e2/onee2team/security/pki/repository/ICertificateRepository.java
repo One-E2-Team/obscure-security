@@ -27,4 +27,7 @@ public interface ICertificateRepository extends JpaRepository<Certificate, Long>
 	
 	@Query("select c from Certificate c where c.issuer = ?1 and c.revoked = false and c.endDate >= ?3 and c.startDate <= ?2")
 	public Certificate findCurrentValidCertificateByIssuerAndSubjectCertDates(CertificateSubject issuer, Date startDates, Date endDate);
+	
+	@Query("select c from Certificates c where c.subject.commonName = ?1 and c.subject.userSubject = ?2 order by c.startDate desc")
+	public List<Certificate> findAllOrderedDescStartDateByCNAndUserDefinedSubject(String cn, UserDefinedSubject uds);
 }
