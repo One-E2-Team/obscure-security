@@ -78,8 +78,8 @@
     </div>
     <div class="row">
         <div class="column scroll-wrapper">
-            <form class="container left-margin">
-                <table>
+            <form class="container left-margin" action="#">
+                <table id="certificate-form">
                     <tr>
                         <td><label for="parent">Type: </label></td>
                         <td>
@@ -111,12 +111,10 @@
                         <td><label for="alt-name">Alternative name: </label></td>
                         <td><input type="text" id="alt-name" name="alt-name"></td>
                     </tr>
-                    <tr style="text-align: center;">
-                        <td colspan="2" ><input type="submit" value="Create"></td>
-                    </tr>
-                
                 </table>
-                    
+                <div style="text-align: center;">
+                    <button id="create-btn">Create</button>
+                </div>
             </form>
         </div>
         <div class="column">
@@ -124,16 +122,12 @@
                 <div class="container">
                     <table id="availableExtensions">
                     </table>
-                    <div>
-                        <button id="btn-add-cert">Add extension</button>
-                    </div>
                 </div>
 
                 <div style="background-color: brown;">
-                    <textarea>Ovde ide opis</textarea>
+                    <textarea id="ta-description">Ovde ide opis</textarea>
                     <div>
-                        <button>Update</button>
-                        <button>Remove</button>
+                        <button id="update-text-btn">Update</button>
                     </div>
                 </div>
             </div>
