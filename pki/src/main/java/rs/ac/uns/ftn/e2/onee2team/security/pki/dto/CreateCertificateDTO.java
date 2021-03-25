@@ -26,7 +26,6 @@ public class CreateCertificateDTO {
 	@NotNull(message = "Public key cannot be empty.")
 	private String publicKey;
 	
-	@NotNull(message = "Issuer serial number cannot be null.")
 	private Long issuerSerialNumber;
 	
 	@NotNull(message = "Certificate type cannot be null.")

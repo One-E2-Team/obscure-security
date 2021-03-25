@@ -19,8 +19,13 @@ async function startupFunction() {
 }
 
 
-function populateCertificates(certificates) {
 
+function populateCertificates(certificates) {
+    if (getRole() === 'ADMINISTRATOR') {
+        document.getElementById('add-new').style.display = 'block';
+    } else {
+        document.getElementById('add-new').style.display = 'none';
+    }
     let table = document.getElementById('certificates-table');
     for (let certificate of certificates) {
         let tr = document.createElement('tr');
