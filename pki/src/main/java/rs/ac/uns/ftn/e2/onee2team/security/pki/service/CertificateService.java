@@ -133,7 +133,7 @@ public class CertificateService implements ICertificateService {
 				kv.setValidUntil(new Date((new Date()).getTime() + 315360000000L));
 				kv = keyVaultRepository.save(kv);
 				c.setPublicKey(kv.getPublicKey());
-			} else if(key.getValidUntil().after(ccdto.getEndDate())){
+			} else if(key.getValidUntil().after(ccdto.getEndDate()) && key.getPrivateKey() == null){
 				c.setPublicKey(pk);
 			} else return null;
 		} else if(ccdto.getType() == CertificateType.ROOT || (ccdto.getType() == CertificateType.INTERMEDIATE && (ccdto.getPublicKey() == null || ccdto.getPublicKey() == ""))) {
@@ -147,7 +147,7 @@ public class CertificateService implements ICertificateService {
 			c.setPublicKey(kv.getPublicKey());
 		} else if(ccdto.getType() == CertificateType.INTERMEDIATE) {
 			KeyVault kv = keyVaultRepository.findByPublicKey((new PublicKeyConverter()).convertToEntityAttribute(ccdto.getPublicKey()));
-			if(kv.getValidUntil().compareTo(ccdto.getEndDate()) > 0) return null;
+			if(kv.getValidUntil().compareTo(ccdto.getEndDate()) < 0) return null;
 			c.setPublicKey(kv.getPublicKey());
 		} else return null;
 		return certificateRepository.save(c);
