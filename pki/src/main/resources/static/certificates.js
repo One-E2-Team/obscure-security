@@ -42,7 +42,13 @@ function populateCertificates(certificates) {
         tr.appendChild(createTd(revoked));
         if (!revoked && getRole() === 'ADMINISTRATOR') {
             tr.appendChild(createButtonTd(certificate.serialNumber, 'Revoke', revoke));
-            tr.appendChild(createButtonTd(certificate.serialNumber + "c", 'Create', createCertificate));
+            if (certificate.type != "END")
+                tr.appendChild(createButtonTd(certificate.serialNumber + "c", 'Create', createCertificate));
+            else
+                tr.appendChild(document.createElement('td'));
+        } else {
+            tr.appendChild(document.createElement('td'));
+            tr.appendChild(document.createElement('td'));
         }
         //tr.appendChild(createButtonTd(certificate.serialNumber, 'Download', download));
         let td = document.createElement('td');
