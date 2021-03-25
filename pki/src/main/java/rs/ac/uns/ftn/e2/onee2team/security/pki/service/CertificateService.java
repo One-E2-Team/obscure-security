@@ -130,7 +130,7 @@ public class CertificateService implements ICertificateService {
 				KeyVault kv = new KeyVault();
 				kv.setPrivateKey(null);
 				kv.setPublicKey(pk);
-				kv.setValidUntil(new Date((new Date()).getTime() + 315360000000L));
+				kv.setValidUntil(new Date((new Date()).getTime() + 315360000000L/5));
 				kv = keyVaultRepository.save(kv);
 				c.setPublicKey(kv.getPublicKey());
 			} else if(key.getValidUntil().after(ccdto.getEndDate()) && key.getPrivateKey() == null){
