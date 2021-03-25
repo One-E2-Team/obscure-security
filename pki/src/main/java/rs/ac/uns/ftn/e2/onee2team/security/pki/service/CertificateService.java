@@ -116,7 +116,7 @@ public class CertificateService implements ICertificateService {
 			c.getSubject().setUserSubject(u.getUserSubject());
 			c.getSubject().setCommonName(ccdto.getCommonName());
 		}
-		c.setSerialNumber(UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE);
+		c.setSerialNumber(UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE / 1000);
 		c.setRevoked(false);
 		c.setStartDate(ccdto.getStartDate());
 		c.setEndDate(ccdto.getEndDate());
@@ -155,6 +155,8 @@ public class CertificateService implements ICertificateService {
 
 	@Override
 	public Boolean isIssuerValid(CreateCertificateDTO certificate, User user) {
+		if(certificate.getType() == CertificateType.ROOT && certificate.getIssuerSerialNumber() != null) return false;
+		if(user.getUserType() != UserType.ADMINISTRATOR && certificate.getType() == CertificateType.ROOT) return false;
 		if(!validDates(certificate.getStartDate(), certificate.getEndDate(), certificate.getType()) || 
 				!validUserRole(certificate.getEmail(), certificate.getIssuerSerialNumber(), certificate.getType()))
 			return false;
