@@ -161,7 +161,7 @@ public class CertificateService implements ICertificateService {
 		if(user.getUserType().equals(UserType.INTERMEDIARY_CA) && !validIntermediary(user, certificate.getIssuerSerialNumber()))
 			return false;
 		Certificate issuer = certificateRepository.findBySerialNumber(certificate.getIssuerSerialNumber());		
-		return issuer == null? true :  issuer.canBeIssuerForDateRange(certificate.getStartDate(), certificate.getEndDate());
+		return (issuer == null && certificate.getType() == CertificateType.ROOT) ? true :  issuer.canBeIssuerForDateRange(certificate.getStartDate(), certificate.getEndDate());
 	}
 	
 	private Boolean validIntermediary(User user, Long serialNumber) {
