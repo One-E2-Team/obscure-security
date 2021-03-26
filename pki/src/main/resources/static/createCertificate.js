@@ -32,7 +32,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
 });
 
 async function generatePublicKey() {
-  HTTPRequest("POST", "/api/certificates/issuerpubkeys", document.getElementById('user').value).then(response => populatePublicKeys(response));
+  let mail = document.getElementById('user').value;
+  HTTPRequest("POST", "/api/certificates/issuerpubkeys", mail).then(response => populatePublicKeys(response));
 }
 
 function populatePublicKeys(keys) {
@@ -154,7 +155,7 @@ function createCertificate() {
     extensions: getUsedExtensions()
   }
 
-  HTTPRequest("POST", "/api/certificates/create", request)
+  HTTPRequest("POST", "/api/certificates/create", JSON.stringify(request))
     .then(response => (console.log(response)));
 }
 

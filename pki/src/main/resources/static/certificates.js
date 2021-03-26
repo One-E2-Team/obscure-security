@@ -5,10 +5,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
 });
 
 async function startupFunction() {
-  HTTPRequest("GET", "/api/certificates/my").then(response => {
-    certificates = response;
-    populateCertificates(certificates);
-  })
+  HTTPRequest("GET", "/api/certificates/my")
+    .then(response => {
+      certificates = response;
+      populateCertificates(certificates);
+    })
 }
 
 

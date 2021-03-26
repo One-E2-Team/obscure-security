@@ -28,7 +28,7 @@ function HTTPRequest(method, url, params) {
         resolve(xhr.response);
     };
 
-    xhr.send(JSON.stringify(params))
+    xhr.send(params)
   });
   return promise;
 }
