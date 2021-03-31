@@ -11,7 +11,7 @@ function dateToDDMMYYYY(dateString) {
   return date.getDate() + '.' + (date.getMonth() + 1) + '.' + date.getFullYear() + '.';
 }
 
-function HTTPRequest(method, url, params) {
+function sendHTTPRequest(method, url, params) {
 
   const promise = new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();

@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 });
 
 async function startupFunction() {
-  HTTPRequest("GET", "/api/certificates/my")
+  sendHTTPRequest("GET", "/api/certificates/my")
     .then(response => {
       certificates = response;
       populateCertificates(certificates);
@@ -115,13 +115,13 @@ function createTd(text) {
 async function revoke() {
   let selection = event.target;
   let serialNum = selection.id;
-  HTTPRequest("POST", "/api/certificates/revoke/" + serialNum).then(location.reload());
+  sendHTTPRequest("POST", "/api/certificates/revoke/" + serialNum).then(location.reload());
 }
 
 async function download() {
   let serialNumber = event.target.id;
   serialNumber = serialNumber.substring(0, serialNumber.length - 1);
-  HTTPRequest("GET", "/api/certificates/download/" + serialNumber);
+  sendHTTPRequest("GET", "/api/certificates/download/" + serialNumber);
 }
 
 function createButtonTd(id, text, fun) {

@@ -70,6 +70,11 @@
         .highlight {
             background-color: #b8b8b8;
         }
+        
+        #ta-description {
+            min-width: 30em;
+            min-height: 10em;
+        }
     </style>
     <script src='util.js' type='text/javascript'></script>
     <script src="createCertificate.js"></script>
@@ -84,56 +89,61 @@
     <div class="row">
         <div class="column scroll-wrapper ">
             <div class="container left-margin" action="#">
-                <table id="certificate-form">
-                    <tr>
-                        <td><label for="parent">Type: </label></td>
-                        <td>
-                            <select id="type">
+                <table>
+                    <tbody id="certificate-body">
+                        <tr>
+                            <td><label for="parent">Type: </label></td>
+                            <td>
+                                <select id="type" onchange="changeType()">
                                 <option value="ROOT" >Root</option>
                                 <option value="INTERMEDIATE">Intermediate</option>
                                 <option value="END" selected>End entity</option>
                             </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><label for="parent">Parent: </label></td>
-                        <td><label type="text" id="parent" disabled name="parent"></label></td>
-                    </tr>
-                    <tr>
-                        <td><label for="start-date">Start date: </label></td>
-                        <td><input id="start-date" type="date"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="end-date">End date: </label></td>
-                        <td><input id="end-date" type="date"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="user">User: </label></td>
-                        <td>
-                            <select id="user" name="user">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label for="parent">Parent: </label></td>
+                            <td><label type="text" id="parent" disabled name="parent"></label></td>
+                        </tr>
+                        <tr>
+                            <td><label for="start-date">Start date: </label></td>
+                            <td><input id="start-date" type="date"></td>
+                        </tr>
+                        <tr>
+                            <td><label for="end-date">End date: </label></td>
+                            <td><input id="end-date" type="date"></td>
+                        </tr>
+                        <tr>
+                            <td><label for="user">User: </label></td>
+                            <td>
+                                <select id="user" onclick="selectUser()" name="user">
                             </select>
-                        </td>
-                    </tr>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label for="common-name">Common name: </label></td>
+                            <td><input type="text" id="common-name" name="common-name"></td>
+                        </tr>
+                        <tr>
+                            <td><label for="public-key">Public key: </label></td>
+                            <td>
+                                <input type="text" id="public-key" name="public-key"><br/>
+                                <select id="generated-keys"></select>
+                            </td>
+                            <td>
+                                <div id="checks">
+                                    <input type="checkbox" id="ch-generate-key" onchange="chRecommendKeysChange()" style="width: 15px; margin-bottom: 2px;"> <label>recommended keys</label>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
                     <tr>
-                        <td><label for="common-name">Common name: </label></td>
-                        <td><input type="text" id="common-name" name="common-name"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="public-key">Public key: </label></td>
-                        <td>
-                            <select id="generated-keys"></select>
-                            <input type="text" id="public-key" name="public-key">
-                        </td>
-                        <td>
-                            <div id="checks">
-                                <input type="checkbox" id="ch-generate-key" style="width: 15px; margin-bottom: 2px;"> <label>recommended keys</label>
-                            </div>
+                        <td colspan="3" style="text-align: center;">
+                            <button id="create-btn">Create</button>
                         </td>
                     </tr>
                 </table>
-                <div style="text-align: center;">
-                    <button id="create-btn">Create</button>
-                </div>
+
             </div>
         </div>
         <div class="column">
@@ -144,10 +154,7 @@
                 </div>
 
                 <div style="background-color: brown;">
-                    <textarea id="ta-description">Ovde ide opis</textarea>
-                    <div>
-                        <button id="update-text-btn">Update</button>
-                    </div>
+                    <textarea id="ta-description" disabled></textarea>
                 </div>
             </div>
         </div>
