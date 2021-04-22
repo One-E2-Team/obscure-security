@@ -30,7 +30,7 @@ public class Certificate {
 	private Long id;
 	
 	@Column(name = "serialNumber", nullable = false, unique = true)
-	private Long serialNumber;
+	private String serialNumber;
 	
 	@Column(name = "startDate", nullable = false)
 	private Date startDate;
@@ -104,11 +104,11 @@ public class Certificate {
 		this.id = id;
 	}
 
-	public Long getSerialNumber() {
+	public String getSerialNumber() {
 		return serialNumber;
 	}
 
-	public void setSerialNumber(Long serialNumber) {
+	public void setSerialNumber(String serialNumber) {
 		this.serialNumber = serialNumber;
 	}
 

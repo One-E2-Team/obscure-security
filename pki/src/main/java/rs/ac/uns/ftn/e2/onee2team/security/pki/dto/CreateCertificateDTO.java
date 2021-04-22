@@ -26,7 +26,7 @@ public class CreateCertificateDTO {
 	@NotNull(message = "Public key cannot be empty.")
 	private String publicKey;
 	
-	private Long issuerSerialNumber;
+	private String issuerSerialNumber;
 	
 	@NotNull(message = "Certificate type cannot be null.")
 	private CertificateType type;
@@ -48,10 +48,10 @@ public class CreateCertificateDTO {
 	public void setEndDate(Date endDate) {
 		this.endDate = endDate;
 	}
-	public Long getIssuerSerialNumber() {
+	public String getIssuerSerialNumber() {
 		return issuerSerialNumber;
 	}
-	public void setIssuerSerialNumber(Long issuerSerialNumber) {
+	public void setIssuerSerialNumber(String issuerSerialNumber) {
 		this.issuerSerialNumber = issuerSerialNumber;
 	}
 	public CertificateType getType() {

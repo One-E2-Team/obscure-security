@@ -11,9 +11,9 @@ import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.User;
 
 public interface ICertificateService {
 
-	void revoke(Long serialNumber);
+	void revoke(String serialNumber);
 
-	Boolean isRevoked(Long serialNumber);
+	Boolean isRevoked(String serialNumber);
 
 	List<Certificate> allMyCertificates(String email);
 	
@@ -21,9 +21,9 @@ public interface ICertificateService {
 	
 	List<PublicKeysDTO> getAvailablePublicKeys(String email);
 
-	byte[] certDownloader(Long ssn);
+	byte[] certDownloader(String ssn);
 
 	Boolean isIssuerValid(CreateCertificateDTO certificate, User user);
 	
-	UserCommonNameDTO findUserBySerialNumber(Long serialNumber);
+	UserCommonNameDTO findUserBySerialNumber(String serialNumber);
 }

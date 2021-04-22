@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.CreateCertificateDTO;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.PublicKeysDTO;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.UserCommonNameDTO;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.keystore.KeyStoreReader;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.keystore.KeyStoreWriter;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.Certificate;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.CertificateExtension;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.CertificateSubject;
@@ -56,7 +58,7 @@ public class CertificateService implements ICertificateService {
 	}
 	
 	@Override
-	public UserCommonNameDTO findUserBySerialNumber(Long serialNumber) {
+	public UserCommonNameDTO findUserBySerialNumber(String serialNumber) {
 		UserCommonNameDTO dto = new UserCommonNameDTO();
 		Certificate cert = certificateRepository.findBySerialNumber(serialNumber);
 		dto.setCommonName(cert.getSubject().getCommonName());
@@ -65,7 +67,7 @@ public class CertificateService implements ICertificateService {
 	}
 
 	@Override
-	public void revoke(Long serialNumber) {
+	public void revoke(String serialNumber) {
 		Certificate cert = certificateRepository.findBySerialNumber(serialNumber);
 		if (cert.getRevoked())
 			return;
@@ -89,7 +91,7 @@ public class CertificateService implements ICertificateService {
 	}
 
 	@Override
-	public Boolean isRevoked(Long serialNumber) {
+	public Boolean isRevoked(String serialNumber) {
 		return certificateRepository.findBySerialNumber(serialNumber).getRevoked();
 	}
 	
@@ -116,7 +118,7 @@ public class CertificateService implements ICertificateService {
 			c.getSubject().setUserSubject(u.getUserSubject());
 			c.getSubject().setCommonName(ccdto.getCommonName());
 		}
-		c.setSerialNumber(UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE / 1000);
+		c.setSerialNumber(UUID.randomUUID().toString());
 		c.setRevoked(false);
 		c.setStartDate(ccdto.getStartDate());
 		c.setEndDate(ccdto.getEndDate());
@@ -150,7 +152,35 @@ public class CertificateService implements ICertificateService {
 			if(kv.getValidUntil().compareTo(ccdto.getEndDate()) < 0) return null;
 			c.setPublicKey(kv.getPublicKey());
 		} else return null;
+		
+		//X509Certificate x509 = buildX509Cert(c.getSerialNumber());
+		
+		//saveToKeyStore(x509, c.getType());
+		
 		return certificateRepository.save(c);
+	}
+
+	private void saveToKeyStore(X509Certificate x509, CertificateType certType) {
+		KeyStoreWriter ksw = new KeyStoreWriter();
+		String fileName = "";
+		switch(certType) {
+		case ROOT:
+			fileName = "rootCertifikates.jks";
+			ksw.loadKeyStore(fileName, System.getenv("ROOT_CERT_KS_PASSWORD").toCharArray());
+			break;
+		case INTERMEDIATE:
+			fileName = "intermediateCertifikates.jks";
+			ksw.loadKeyStore(fileName, System.getenv("INTERMEDIATE_CERT_KS_PASSWORD").toCharArray());
+			break;
+		case END:
+			fileName = "endCertifikates.jks";
+			ksw.loadKeyStore(fileName, System.getenv("END_CERT_KS_PASSWORD").toCharArray());
+			break;
+		default:
+			break;
+		}
+		ksw.write(x509.getSerialNumber().toString(), x509);
+		ksw.saveKeyStore(fileName, "sifra".toCharArray());
 	}
 
 	@Override
@@ -166,12 +196,12 @@ public class CertificateService implements ICertificateService {
 		return (issuer == null && certificate.getType() == CertificateType.ROOT) ? true :  issuer.canBeIssuerForDateRange(certificate.getStartDate(), certificate.getEndDate());
 	}
 	
-	private Boolean validIntermediary(User user, Long serialNumber) {
+	private Boolean validIntermediary(User user, String serialNumber) {
 		return user.getUserSubject().getId().equals
 				(certificateRepository.findBySerialNumber(serialNumber).getSubject().getUserSubject().getId());
 	}
 	
-	private Boolean validUserRole(String email, Long issuerSerialNumber, CertificateType type) {
+	private Boolean validUserRole(String email, String issuerSerialNumber, CertificateType type) {
 		User u = userRepository.findByEmail(email);
 		if(type.equals(CertificateType.ROOT)) {
 			if (!u.getUserType().equals(UserType.ADMINISTRATOR))
@@ -230,7 +260,19 @@ public class CertificateService implements ICertificateService {
 	}
 	
 	@Override
-	public byte[] certDownloader(Long ssn) {
+	public byte[] certDownloader(String ssn) {
+		X509Certificate ret = buildX509Cert(ssn);
+		
+		System.out.println(ret);
+		try {
+			return ret.getEncoded();
+		} catch (CertificateEncodingException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	private X509Certificate buildX509Cert(String ssn) {
 		Certificate cert = certificateRepository.findBySerialNumber(ssn);
 		Certificate issuerCert = certificateRepository.findCurrentValidCertificateByIssuerAndSubjectCertDates(cert.getIssuer(), cert.getStartDate(), cert.getEndDate());
 		KeyVault isssuerkv = keyVaultRepository.findByPublicKey(issuerCert.getPublicKey());
@@ -255,7 +297,7 @@ public class CertificateService implements ICertificateService {
 	    User subject = userRepository.findUserByUserDefinedSubject(cert.getSubject().getUserSubject());
 	    builder.addRDN(BCStyle.E, subject.getEmail());
 	    builder.addRDN(BCStyle.UID, subject.getId().toString());
-	    SubjectData subjectData = new SubjectData(cert.getPublicKey(), builder.build(), cert.getSerialNumber().toString(), cert.getStartDate(), cert.getEndDate());
+	    SubjectData subjectData = new SubjectData(cert.getPublicKey(), builder.build(), cert.getSerialNumber(), cert.getStartDate(), cert.getEndDate());
 	    ArrayList<ExtensionFormat> ef = new ArrayList<ExtensionFormat>();
 	    for (Integer i = 0; i < cert.getExtensions().size(); i++) {
 			ExtensionFormat temp = new ExtensionFormat();
@@ -266,12 +308,7 @@ public class CertificateService implements ICertificateService {
 		}
 	    CertificateGenerator cg = new CertificateGenerator();
 		X509Certificate ret = cg.generateCertificate(subjectData, issuerData, ef);
-		System.out.println(ret);
-		try {
-			return ret.getEncoded();
-		} catch (CertificateEncodingException e) {
-			e.printStackTrace();
-			return null;
-		}
+		
+		return ret;
 	}
 }

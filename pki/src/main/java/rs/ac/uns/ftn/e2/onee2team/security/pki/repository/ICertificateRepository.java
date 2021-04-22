@@ -12,7 +12,7 @@ import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.UserDefinedSubj
 
 public interface ICertificateRepository extends JpaRepository<Certificate, Long> {
 
-	Certificate findBySerialNumber(Long serialNumber);
+	Certificate findBySerialNumber(String serialNumber);
 
 	@Query("select c from Certificate c where c.issuer.id = ?1")
 	public List<Certificate> findCertificatesByIssuerId(Long issuer_id);

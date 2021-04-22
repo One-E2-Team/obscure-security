@@ -37,7 +37,7 @@ public class CertificateController extends ValidationController {
 	public CertificateController(ICertificateService certificateService) {
 		this.certificateService = certificateService;
 	}
-
+	
 	@GetMapping(value = "/my")
 	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')" + "||"
 			+ "hasRole('ROLE_END_ENTITY')")
@@ -48,20 +48,20 @@ public class CertificateController extends ValidationController {
 	
 	@GetMapping(value = "/user/{num}")
 	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')")
-	public UserCommonNameDTO getUserBySerialNumber(@PathVariable("num") Long serialNumber) {
+	public UserCommonNameDTO getUserBySerialNumber(@PathVariable("num") String serialNumber) {
 		return certificateService.findUserBySerialNumber(serialNumber);
 	}
 
 	@PostMapping(value = "/revoke/{num}")
 	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
-	public void revokeCertificate(@PathVariable("num") Long serialNumber) {
+	public void revokeCertificate(@PathVariable("num") String serialNumber) {
 		certificateService.revoke(serialNumber);
 	}
 	
 	@GetMapping("/isRevoked/{num}")
 	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')" + "||"
 			+ "hasRole('ROLE_END_ENTITY')")
-	public boolean isCertificateRevoke(@PathVariable("num") Long serialNumber) {
+	public boolean isCertificateRevoke(@PathVariable("num") String serialNumber) {
 		return certificateService.isRevoked(serialNumber);
 	}
 	
@@ -81,7 +81,7 @@ public class CertificateController extends ValidationController {
 	}
 	
 	@GetMapping(value = "/download/{ssn}")
-	public ResponseEntity<Resource> download(@PathVariable("ssn") Long ssn){
+	public ResponseEntity<Resource> download(@PathVariable("ssn") String ssn){
 		HttpHeaders header = new HttpHeaders();
         header.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + ssn.toString() + ".cer");
         header.add("Cache-Control", "no-cache, no-store, must-revalidate");
