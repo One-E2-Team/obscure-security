@@ -11,9 +11,11 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.server.SecurityWebFilterChain;
 
 import rs.ac.uns.ftn.e2.onee2team.security.pki.auth.RestAuthenticationEntryPoint;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.auth.TokenAuthenticationFilter;
@@ -68,6 +70,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 						BasicAuthenticationFilter.class);
 		http.csrf().disable();
 	}
+	
 	@Override
 	public void configure(WebSecurity web) throws Exception {
 		web.ignoring().antMatchers(HttpMethod.POST, "/api/auth/login");
