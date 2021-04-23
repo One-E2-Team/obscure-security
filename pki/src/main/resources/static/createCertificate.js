@@ -5,10 +5,10 @@ var users = []
 document.addEventListener("DOMContentLoaded", function() {
   _initializeExtensions();
   _initializeUsers();
-  _initializeParent().then(issuer => document.getElementById("create-btn").addEventListener("click", function() { createCertificate(issuer) }));
+  _initializeParent().then(issuerId => document.getElementById("create-btn").addEventListener("click", function() { createCertificate(issuerId) }));
 });
 
-function createCertificate(issuer) {
+function createCertificate(issuerId) {
   let request = {
     type: document.getElementById('type').value,
     startDate: document.getElementById('start-date').value,
@@ -16,7 +16,7 @@ function createCertificate(issuer) {
     email: document.getElementById('user').value,
     commonName: document.getElementById("common-name").value,
     publicKey: _getChosenPublicKey(),
-    issuerSerialNumber: issuer.id,
+    issuerSerialNumber: issuerId,
     extensions: getUsedExtensions()
   }
 
@@ -70,15 +70,19 @@ async function _initializeExtensions() {
 async function _initializeParent() {
   const promise = new Promise((resolve) => {
     let issuerId = _getIssuerIdFromURL();
-    sendHTTPRequest("GET", "/api/certificates/user/" + issuerId)
-      .then(response => {
-        issuer = response;
-        issuer.id = issuerId;
-        let parent = document.getElementById('parent');
-        parent.innerText = issuer.id;
-        parent.addEventListener("click", function() { _showObjectToTextArea(issuer); })
-        resolve(issuer);
-      });
+    if (issuerId == null)
+      resolve(null);
+    else {
+      sendHTTPRequest("GET", "/api/certificates/user/" + issuerId)
+        .then(response => {
+          issuer = response;
+          issuer.id = issuerId;
+          let parent = document.getElementById('parent');
+          parent.innerText = issuer.id;
+          parent.addEventListener("click", function() { _showObjectToTextArea(issuer); })
+          resolve(issuer.id);
+        });
+    }
   })
   return promise;
 }
@@ -238,7 +242,9 @@ function _removeElementFromList(list, item) {
 
 function _getIssuerIdFromURL() {
   let url = window.location.href;
-  let paramsUrl = url.split('?')[1]
+  let paramsUrl = url.split('?')[1];
+  if (paramsUrl === undefined)
+    return null;
   let params = paramsUrl.split('&')
   return params[0].split('=')[1];
 }
