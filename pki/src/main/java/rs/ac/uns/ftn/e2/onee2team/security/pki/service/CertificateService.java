@@ -1,5 +1,6 @@
 package rs.ac.uns.ftn.e2.onee2team.security.pki.service;
 
+import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
@@ -118,7 +119,7 @@ public class CertificateService implements ICertificateService {
 			c.getSubject().setUserSubject(u.getUserSubject());
 			c.getSubject().setCommonName(ccdto.getCommonName());
 		}
-		c.setSerialNumber(UUID.randomUUID().toString());
+		c.setSerialNumber(BigInteger.valueOf(Math.abs(UUID.randomUUID().getMostSignificantBits())).toString());
 		c.setRevoked(false);
 		c.setStartDate(ccdto.getStartDate());
 		c.setEndDate(ccdto.getEndDate());
@@ -153,38 +154,44 @@ public class CertificateService implements ICertificateService {
 			c.setPublicKey(kv.getPublicKey());
 		} else return null;
 		
-		//X509Certificate x509 = buildX509Cert(c.getSerialNumber());
+		certificateRepository.save(c);
 		
-		//saveToKeyStore(x509, c.getType());
+		X509Certificate x509 = buildX509Cert(c);
 		
-		return certificateRepository.save(c);
+		saveToKeyStore(x509, c.getType());
+		
+		return c;
 	}
 
 	private void saveToKeyStore(X509Certificate x509, CertificateType certType) {
 		KeyStoreWriter ksw = new KeyStoreWriter();
 		String fileName = "";
+		String ks_pass = "";
 		switch(certType) {
 		case ROOT:
 			fileName = "rootCertifikates.jks";
-			ksw.loadKeyStore(fileName, System.getenv("ROOT_CERT_KS_PASSWORD").toCharArray());
+			ks_pass = System.getenv("ROOT_CERT_KS_PASSWORD");
 			break;
 		case INTERMEDIATE:
 			fileName = "intermediateCertifikates.jks";
-			ksw.loadKeyStore(fileName, System.getenv("INTERMEDIATE_CERT_KS_PASSWORD").toCharArray());
+			ks_pass = System.getenv("INTERMEDIATE_CERT_KS_PASSWORD");
 			break;
 		case END:
 			fileName = "endCertifikates.jks";
-			ksw.loadKeyStore(fileName, System.getenv("END_CERT_KS_PASSWORD").toCharArray());
+			ks_pass = System.getenv("END_CERT_KS_PASSWORD");
 			break;
 		default:
 			break;
 		}
-		ksw.write(x509.getSerialNumber().toString(), x509);
-		ksw.saveKeyStore(fileName, "sifra".toCharArray());
+		ksw.loadKeyStore(fileName, ks_pass.toCharArray());
+		KeyVault key = keyVaultRepository.findByPublicKey(x509.getPublicKey());
+		ksw.write(x509.getSerialNumber().toString(), key.getPrivateKey(), ks_pass.toCharArray(), x509);
+		ksw.saveKeyStore(fileName, ks_pass.toCharArray());
 	}
 
 	@Override
 	public Boolean isIssuerValid(CreateCertificateDTO certificate, User user) {
+		System.out.println(certificate.getIssuerSerialNumber());
 		if(certificate.getType() == CertificateType.ROOT && certificate.getIssuerSerialNumber() != null) return false;
 		if(user.getUserType() != UserType.ADMINISTRATOR && certificate.getType() == CertificateType.ROOT) return false;
 		if(!validDates(certificate.getStartDate(), certificate.getEndDate(), certificate.getType()) || 
@@ -270,6 +277,37 @@ public class CertificateService implements ICertificateService {
 			e.printStackTrace();
 			return null;
 		}
+	}
+	
+	private X509Certificate buildX509Cert(Certificate cert) {
+		Certificate issuerCert = certificateRepository.findCurrentValidCertificateByIssuerAndSubjectCertDates(cert.getIssuer(), cert.getStartDate(), cert.getEndDate());
+		KeyVault isssuerkv = keyVaultRepository.findByPublicKey(issuerCert.getPublicKey());
+		X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
+	    builder.addRDN(BCStyle.CN, issuerCert.getSubject().getCommonName());
+	    builder.addRDN(BCStyle.O, issuerCert.getSubject().getUserSubject().getOrganization());
+	    builder.addRDN(BCStyle.OU, issuerCert.getSubject().getUserSubject().getOrganizationalUnit());
+	    builder.addRDN(BCStyle.C, issuerCert.getSubject().getUserSubject().getCountry());
+	    builder.addRDN(BCStyle.ST, issuerCert.getSubject().getUserSubject().getState());
+	    builder.addRDN(BCStyle.L, issuerCert.getSubject().getUserSubject().getLocality());
+	    User issuer = userRepository.findUserByUserDefinedSubject(issuerCert.getSubject().getUserSubject());
+	    builder.addRDN(BCStyle.E, issuer.getEmail());
+	    builder.addRDN(BCStyle.UID, issuer.getId().toString());
+		IssuerData issuerData = new IssuerData(isssuerkv.getPrivateKey(), builder.build());
+		builder = new X500NameBuilder(BCStyle.INSTANCE);
+	    builder.addRDN(BCStyle.CN, cert.getSubject().getCommonName());
+	    builder.addRDN(BCStyle.O, cert.getSubject().getUserSubject().getOrganization());
+	    builder.addRDN(BCStyle.OU, cert.getSubject().getUserSubject().getOrganizationalUnit());
+	    builder.addRDN(BCStyle.C, cert.getSubject().getUserSubject().getCountry());
+	    builder.addRDN(BCStyle.ST, cert.getSubject().getUserSubject().getState());
+	    builder.addRDN(BCStyle.L, cert.getSubject().getUserSubject().getLocality());
+	    User subject = userRepository.findUserByUserDefinedSubject(cert.getSubject().getUserSubject());
+	    builder.addRDN(BCStyle.E, subject.getEmail());
+	    builder.addRDN(BCStyle.UID, subject.getId().toString());
+	    SubjectData subjectData = new SubjectData(cert.getPublicKey(), builder.build(), cert.getSerialNumber(), cert.getStartDate(), cert.getEndDate());
+	    CertificateGenerator cg = new CertificateGenerator();
+		X509Certificate ret = cg.generateCertificate(subjectData, issuerData, new ArrayList<ExtensionFormat>());
+		
+		return ret;
 	}
 
 	private X509Certificate buildX509Cert(String ssn) {

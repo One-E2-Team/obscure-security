@@ -11,6 +11,9 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class KeyStoreWriter {
 
@@ -60,9 +63,28 @@ public class KeyStoreWriter {
 		}
 	}
 	
-	public void write(String alias, Certificate certificate) {
+	public void writeNonRoot(String alias, PrivateKey privateKey, char[] password, Certificate certificate) {
 		try {
-			keyStore.setCertificateEntry(alias, certificate);
+			System.out.println(keyStore.getCertificateChain(alias).length);
+			List<Certificate> certChain = new ArrayList<Certificate>(Arrays.asList(keyStore.getCertificateChain(alias)));
+			certChain.add(certificate);
+			keyStore.setKeyEntry(alias, privateKey, password, (Certificate[]) certChain.toArray());
+		} catch (KeyStoreException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void write(String alias, PrivateKey privateKey, char[] password, Certificate certificate) {
+		try {
+			keyStore.setKeyEntry(alias, privateKey, password, new Certificate[] {certificate});
+		} catch (KeyStoreException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void writeRoot(String alias, PrivateKey privateKey, char[] password, Certificate certificate) {
+		try {
+			keyStore.setKeyEntry(alias, privateKey, password, new Certificate[] {certificate});
 		} catch (KeyStoreException e) {
 			e.printStackTrace();
 		}
