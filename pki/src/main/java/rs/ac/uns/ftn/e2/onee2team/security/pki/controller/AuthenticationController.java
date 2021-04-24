@@ -5,23 +5,31 @@ import java.util.Collection;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import rs.ac.uns.ftn.e2.onee2team.security.pki.auth.JwtAuthenticationRequest;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.auth.ResourceConflictException;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.auth.TokenUtils;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.auth.UserTokenState;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.UserRequestDTO;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.User;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.UserType;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.service.IEmailNotificationService;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.service.IKeyVaultService;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.service.IUserService;
 
@@ -41,6 +49,12 @@ public class AuthenticationController {
 	
 	//@Autowired
 	//private IKeyVaultService keyVaultService;
+	
+	@Autowired
+	private IEmailNotificationService emailNotificationService;
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 	
 	@PostMapping("/login") 
 	public ResponseEntity<UserTokenState> createAuthenticationToken(@RequestBody JwtAuthenticationRequest authenticationRequest,
@@ -64,4 +78,25 @@ public class AuthenticationController {
 		// Vrati token kao odgovor na uspesnu autentifikaciju
 		return ResponseEntity.ok(new UserTokenState(jwt, expiresIn, userType, email));
 	}
+	
+	// Endpoint za registraciju novog korisnika
+		@PostMapping("/register")
+		public ResponseEntity<User> addUser(/*@Valid */@RequestBody UserRequestDTO userRequest, UriComponentsBuilder ucBuilder) {
+
+			User existUser = this.userService.findByEmail(userRequest.getEmail());
+			if (existUser != null && existUser.isEnabled()) {
+				throw new ResourceConflictException(0L/*userRequest.getEmail()*/, "Email already exists");
+			}
+			User user = this.userService.createUser(userRequest);
+			HttpHeaders headers = new HttpHeaders();
+			headers.setLocation(ucBuilder.path("/api/user/{userId}").buildAndExpand(user.getId()).toUri());
+			this.emailNotificationService.sendNotificationAsync(user.getEmail(), "Account Validation", "Visit this link in the next 20 minutes to validate your account: https://localhost/api/auth/validate/" + user.getId() + "/" + user.getRequestUUID());
+			return new ResponseEntity<>(user, HttpStatus.CREATED);
+		}
+		
+		@GetMapping("/validate/{id}/{uuid}")
+		public String validatePatient(@PathVariable("id") Long id, @PathVariable("uuid") String uuid) {
+			boolean check = userService.validateUser(id, uuid);
+			return check ? "Validation succesfull, you can use your account now." : "Illegal invocation.";
+		}
 }

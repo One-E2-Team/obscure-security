@@ -1,25 +1,39 @@
 package rs.ac.uns.ftn.e2.onee2team.security.pki.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.UserDTO;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.UserRequestDTO;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.Certificate;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.UserDefinedSubject;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.Authority;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.EndEntity;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.IntermediaryCA;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.User;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.UserType;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.repository.IUserRepository;
 
 @Service
 public class UserService implements IUserService {
 
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 	private IUserRepository userRepository;
+	private IAuthorityService authorityService;
 	
 	@Autowired
-	public UserService(IUserRepository userRepository) {
+	public UserService(IUserRepository userRepository, IAuthorityService authorityService) {
 		this.userRepository = userRepository;
+		this.authorityService = authorityService;
 	}
 	
 	@Override
@@ -47,5 +61,47 @@ public class UserService implements IUserService {
 			ret_list.add(dto);
 		}
 		return ret_list;
+	}
+
+	@Override
+	public User createUser(UserRequestDTO userRequest) {
+		User ret = null;
+		if(userRequest.getUserType().equals(UserType.INTERMEDIARY_CA)) {
+			IntermediaryCA u = new IntermediaryCA();
+			u.setUserType(UserType.INTERMEDIARY_CA);
+			u.setCertificates((List<Certificate>)(new ArrayList<Certificate>()));
+			u.setAuthorities(authorityService.findByname("ROLE_INTERMEDIARY_CA"));
+			ret = u;
+		} else if(userRequest.getUserType().equals(UserType.END_ENTITY)) {
+			EndEntity u = new EndEntity();
+			u.setUserType(UserType.END_ENTITY);
+			u.setCertificates((List<Certificate>)(new ArrayList<Certificate>()));
+			u.setAuthorities(authorityService.findByname("ROLE_END_ENTITY"));
+			ret = u;
+		} else return null;
+		ret.setEmail(userRequest.getEmail());
+		ret.setEnabled(false);
+		ret.setPassword(passwordEncoder.encode(userRequest.getPassword()));
+		ret.setRequestUUID(UUID.randomUUID().toString());
+		ret.setExpUUID(new Date((new Date()).getTime() + 1200000L)); //20mins
+		ret.setUserSubject(new UserDefinedSubject());
+		ret.getUserSubject().setCountry(userRequest.getCountry());
+		ret.getUserSubject().setLocality(userRequest.getLocality());
+		ret.getUserSubject().setOrganization(userRequest.getOrganization());
+		ret.getUserSubject().setOrganizationalUnit(userRequest.getOrganizationalUnit());
+		ret.getUserSubject().setState(userRequest.getState());
+		return userRepository.save(ret);
+	}
+
+	@Override
+	public boolean validateUser(Long id, String uuid) {
+		User p = userRepository.findById(id).orElse(null);
+		if(p == null || p.isEnabled())
+			return false;
+		p.setEnabled(true);
+		p.setRequestUUID(null);
+		p.setExpUUID(null);
+		p = userRepository.saveAndFlush(p);
+		return p.isEnabled();
 	}
 }

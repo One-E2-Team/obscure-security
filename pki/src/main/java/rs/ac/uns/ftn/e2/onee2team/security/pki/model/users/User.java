@@ -1,6 +1,7 @@
 package rs.ac.uns.ftn.e2.onee2team.security.pki.model.users;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -56,6 +57,15 @@ public abstract class User implements UserDetails {
 	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	@JoinTable(name = "user_authority", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "authority_id", referencedColumnName = "id"))
 	private List<Authority> authorities;
+	
+	@Column(name = "enabled", nullable = false)
+	private boolean enabled = false;
+	
+	@Column(name = "requestUUID", nullable = true)
+	private String requestUUID;
+	
+	@Column(name = "expUUID", nullable = true)
+	private Date expUUID;
 
 	public void setAuthorities(List<Authority> authorities) {
 		this.authorities = authorities;
@@ -117,7 +127,7 @@ public abstract class User implements UserDetails {
 	@JsonIgnore
 	@Override
 	public boolean isEnabled() {
-		return true;
+		return this.enabled;
 	}
 	
 	@JsonIgnore
@@ -142,4 +152,25 @@ public abstract class User implements UserDetails {
 	public String getUsername() {
 		return this.getEmail();
 	}
+
+	public String getRequestUUID() {
+		return requestUUID;
+	}
+
+	public void setRequestUUID(String requestUUID) {
+		this.requestUUID = requestUUID;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+
+	public Date getExpUUID() {
+		return expUUID;
+	}
+
+	public void setExpUUID(Date expUUID) {
+		this.expUUID = expUUID;
+	}
+	
 }
