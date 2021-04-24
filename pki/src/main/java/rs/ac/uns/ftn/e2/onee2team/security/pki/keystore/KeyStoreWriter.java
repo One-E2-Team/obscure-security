@@ -11,6 +11,7 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -63,28 +64,18 @@ public class KeyStoreWriter {
 		}
 	}
 	
-	public void writeNonRoot(String alias, PrivateKey privateKey, char[] password, Certificate certificate) {
+	public void write(String alias, PrivateKey privateKey, char[] password, X509Certificate certificate, List<X509Certificate> certChain) {
 		try {
-			System.out.println(keyStore.getCertificateChain(alias).length);
-			List<Certificate> certChain = new ArrayList<Certificate>(Arrays.asList(keyStore.getCertificateChain(alias)));
-			certChain.add(certificate);
-			keyStore.setKeyEntry(alias, privateKey, password, (Certificate[]) certChain.toArray());
-		} catch (KeyStoreException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public void write(String alias, PrivateKey privateKey, char[] password, Certificate certificate) {
-		try {
-			keyStore.setKeyEntry(alias, privateKey, password, new Certificate[] {certificate});
-		} catch (KeyStoreException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public void writeRoot(String alias, PrivateKey privateKey, char[] password, Certificate certificate) {
-		try {
-			keyStore.setKeyEntry(alias, privateKey, password, new Certificate[] {certificate});
+			if(certChain == null)
+				keyStore.setKeyEntry(alias, privateKey, password, new Certificate[] {certificate});
+			else {
+				Certificate[] certChainArray = new Certificate[certChain.size()+1];
+				for(int i = 0; i < certChain.size(); i++) {
+					certChainArray[i] = (Certificate) certChain.get(i);
+				}
+				certChainArray[certChainArray.length-1] = (Certificate) certificate;
+				keyStore.setKeyEntry(alias, privateKey, password, certChainArray);
+			}
 		} catch (KeyStoreException e) {
 			e.printStackTrace();
 		}

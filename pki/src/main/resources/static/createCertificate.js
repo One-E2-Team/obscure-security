@@ -242,9 +242,6 @@ function _removeElementFromList(list, item) {
 
 function _getIssuerIdFromURL() {
   let url = window.location.href;
-  let paramsUrl = url.split('?')[1]
-  if(paramsUrl === undefined)
-  	return null;
   let paramsUrl = url.split('?')[1];
   if (paramsUrl === undefined)
     return null;

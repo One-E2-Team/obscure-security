@@ -26,13 +26,22 @@ public class KeyStoreReader {
 		}
 	}
 	
-	public Certificate readCertificate(String keyStoreFile, String keyStorePass, String alias) {
+	public X509Certificate[] readCertificateChain(String keyStoreFile, String keyStorePass, String alias) {
 		try {
 			BufferedInputStream in = new BufferedInputStream(new FileInputStream(keyStoreFile));
 			keyStore.load(in, keyStorePass.toCharArray());
-			
-			X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
-			return cert;
+			X509Certificate[] ret;
+			if(keyStoreFile.contains("root")) {
+				ret = new X509Certificate[1];
+				ret[0] = (X509Certificate) keyStore.getCertificate(alias);
+			}else {
+				Certificate[] certChain = keyStore.getCertificateChain(alias);
+				ret = new X509Certificate[certChain.length];
+				for(int i = 0; i < certChain.length; i++) {
+					ret[i] = (X509Certificate)certChain[i];
+				}
+			}
+			return ret;
 			
 		} catch (KeyStoreException e) {
 			e.printStackTrace();

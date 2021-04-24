@@ -1,11 +1,13 @@
 package rs.ac.uns.ftn.e2.onee2team.security.pki.service;
 
 import java.math.BigInteger;
+
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -40,6 +42,7 @@ import rs.ac.uns.ftn.e2.onee2team.security.pki.util.IssuerData;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.util.RSA;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.util.SubjectData;
 
+
 @Service
 public class CertificateService implements ICertificateService {
 
@@ -50,6 +53,10 @@ public class CertificateService implements ICertificateService {
 	private final Long ROOT_MAX_VALUE = 315569520000L; // 10 years
 	private final Long INTERMEDIATE_MAX_VALUE = 157784760000L; // 5 years
 	private final Long END_ENTITY_MAX_VALUE = 63113904000L; // 2 years
+	
+	private final String ROOT_KS_FILE = "rootCertifikates.jks";
+	private final String INTERMEDIATE_KS_FILE = "intermediateCertifikates.jks";
+	private final String END_KS_FILE = "endCertifikates.jks";
 
 	@Autowired
 	public CertificateService(ICertificateRepository certificateRepository, IUserRepository userRepository, IKeyVaultRepository keyVaultRepository) {
@@ -146,7 +153,7 @@ public class CertificateService implements ICertificateService {
 			kv.setPublicKey(kp.getPublic());
 			Long validity = ccdto.getType() != CertificateType.INTERMEDIATE ? 315360000000L : 315360000000L /2;
 			kv.setValidUntil(new Date((new Date()).getTime() + validity));
-			kv = keyVaultRepository.save(kv);
+			kv = keyVaultRepository.saveAndFlush(kv);
 			c.setPublicKey(kv.getPublicKey());
 		} else if(ccdto.getType() == CertificateType.INTERMEDIATE) {
 			KeyVault kv = keyVaultRepository.findByPublicKey((new PublicKeyConverter()).convertToEntityAttribute(ccdto.getPublicKey()));
@@ -157,14 +164,19 @@ public class CertificateService implements ICertificateService {
 		certificateRepository.save(c);
 		
 		X509Certificate x509 = buildX509Cert(c);
-		
-		saveToKeyStore(x509, c.getType());
+		List<X509Certificate> certChain = null;
+		if(!c.getType().equals(CertificateType.ROOT)) {
+			certChain = getCertificateChain(certificateRepository.findCurrentValidCertificateByIssuerAndSubjectCertDates(c.getIssuer(), c.getStartDate(), c.getEndDate()));
+		}
+		saveToKeyStore(x509, certChain, c.getType());
 		
 		return c;
 	}
 
-	private void saveToKeyStore(X509Certificate x509, CertificateType certType) {
+	private void saveToKeyStore(X509Certificate x509, List<X509Certificate> certChain, CertificateType certType) {
 		KeyStoreWriter ksw = new KeyStoreWriter();
+		KeyVault key = keyVaultRepository.findByPublicKey(x509.getPublicKey());
+		
 		String fileName = "";
 		String ks_pass = "";
 		switch(certType) {
@@ -183,10 +195,27 @@ public class CertificateService implements ICertificateService {
 		default:
 			break;
 		}
+		
 		ksw.loadKeyStore(fileName, ks_pass.toCharArray());
-		KeyVault key = keyVaultRepository.findByPublicKey(x509.getPublicKey());
-		ksw.write(x509.getSerialNumber().toString(), key.getPrivateKey(), ks_pass.toCharArray(), x509);
+		ksw.write(x509.getSerialNumber().toString(), key.getPrivateKey(), ks_pass.toCharArray(), x509, certChain);
 		ksw.saveKeyStore(fileName, ks_pass.toCharArray());
+	}
+	
+	private List<X509Certificate> getCertificateChain(Certificate c) {
+		List<X509Certificate> ret = new ArrayList<X509Certificate>();
+		KeyStoreReader ksr = new KeyStoreReader();
+		if(c.getType().equals(CertificateType.ROOT)) {
+			X509Certificate[] chain = ksr.readCertificateChain(ROOT_KS_FILE, System.getenv("ROOT_CERT_KS_PASSWORD"), c.getSerialNumber());
+			ret = Arrays.asList(chain);
+		}else if(c.getType().equals(CertificateType.INTERMEDIATE)){
+			X509Certificate[] chain = ksr.readCertificateChain(INTERMEDIATE_KS_FILE, System.getenv("INTERMEDIATE_CERT_KS_PASSWORD"), c.getSerialNumber());
+			ret = Arrays.asList(chain);
+		}else {
+			X509Certificate[] chain = ksr.readCertificateChain(END_KS_FILE, System.getenv("END_CERT_KS_PASSWORD"), c.getSerialNumber());
+			ret = Arrays.asList(chain);
+		}
+		
+		return ret;
 	}
 
 	@Override
@@ -280,8 +309,17 @@ public class CertificateService implements ICertificateService {
 	}
 	
 	private X509Certificate buildX509Cert(Certificate cert) {
-		Certificate issuerCert = certificateRepository.findCurrentValidCertificateByIssuerAndSubjectCertDates(cert.getIssuer(), cert.getStartDate(), cert.getEndDate());
+		Certificate issuerCert;
+		IssuerData issuerData;
+		
+		if(cert.getType().equals(CertificateType.ROOT)) {
+			issuerCert = cert;
+		}else {
+			issuerCert = certificateRepository.findCurrentValidCertificateByIssuerAndSubjectCertDates(cert.getIssuer(), cert.getStartDate(), cert.getEndDate());
+		}
+		
 		KeyVault isssuerkv = keyVaultRepository.findByPublicKey(issuerCert.getPublicKey());
+		
 		X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
 	    builder.addRDN(BCStyle.CN, issuerCert.getSubject().getCommonName());
 	    builder.addRDN(BCStyle.O, issuerCert.getSubject().getUserSubject().getOrganization());
@@ -292,7 +330,6 @@ public class CertificateService implements ICertificateService {
 	    User issuer = userRepository.findUserByUserDefinedSubject(issuerCert.getSubject().getUserSubject());
 	    builder.addRDN(BCStyle.E, issuer.getEmail());
 	    builder.addRDN(BCStyle.UID, issuer.getId().toString());
-		IssuerData issuerData = new IssuerData(isssuerkv.getPrivateKey(), builder.build());
 		builder = new X500NameBuilder(BCStyle.INSTANCE);
 	    builder.addRDN(BCStyle.CN, cert.getSubject().getCommonName());
 	    builder.addRDN(BCStyle.O, cert.getSubject().getUserSubject().getOrganization());
@@ -305,6 +342,9 @@ public class CertificateService implements ICertificateService {
 	    builder.addRDN(BCStyle.UID, subject.getId().toString());
 	    SubjectData subjectData = new SubjectData(cert.getPublicKey(), builder.build(), cert.getSerialNumber(), cert.getStartDate(), cert.getEndDate());
 	    CertificateGenerator cg = new CertificateGenerator();
+	    
+	    issuerData = new IssuerData(isssuerkv.getPrivateKey(), builder.build());
+	    
 		X509Certificate ret = cg.generateCertificate(subjectData, issuerData, new ArrayList<ExtensionFormat>());
 		
 		return ret;
