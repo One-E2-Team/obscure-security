@@ -95,8 +95,11 @@ public class AuthenticationController {
 		}
 		
 		@GetMapping("/validate/{id}/{uuid}")
-		public String validatePatient(@PathVariable("id") Long id, @PathVariable("uuid") String uuid) {
+		public ResponseEntity<String> validatePatient(@PathVariable("id") Long id, @PathVariable("uuid") String uuid, UriComponentsBuilder ucBuilder) {
 			boolean check = userService.validateUser(id, uuid);
-			return check ? "Validation succesfull, you can use your account now." : "Illegal invocation.";
+			HttpHeaders headers = new HttpHeaders();
+			headers.setLocation(ucBuilder.path("/certificates.html").build().toUri());
+			if(check) return new ResponseEntity<String>("Validation succesfull, you can use your account now.", headers, HttpStatus.TEMPORARY_REDIRECT);
+			else return new ResponseEntity<String>("Illegal invocation.", HttpStatus.I_AM_A_TEAPOT);
 		}
 }
