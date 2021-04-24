@@ -80,4 +80,12 @@ public class KeyStoreWriter {
 			e.printStackTrace();
 		}
 	}
+	
+	public void writeEnd(String alias, char[] password, X509Certificate certificate) {
+		try {
+			keyStore.setCertificateEntry(alias, certificate);
+		} catch (KeyStoreException e) {
+			e.printStackTrace();
+		}
+	}
 }
