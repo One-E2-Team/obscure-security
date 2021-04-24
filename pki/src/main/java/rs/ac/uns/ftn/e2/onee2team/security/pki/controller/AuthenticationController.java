@@ -27,6 +27,8 @@ import rs.ac.uns.ftn.e2.onee2team.security.pki.auth.ResourceConflictException;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.auth.TokenUtils;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.auth.UserTokenState;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.UserRequestDTO;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.EndEntity;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.IntermediaryCA;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.User;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.UserType;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.service.IEmailNotificationService;
@@ -84,7 +86,7 @@ public class AuthenticationController {
 		public ResponseEntity<User> addUser(/*@Valid */@RequestBody UserRequestDTO userRequest, UriComponentsBuilder ucBuilder) {
 
 			User existUser = this.userService.findByEmail(userRequest.getEmail());
-			if (existUser != null && existUser.isEnabled()) {
+			if (existUser != null) {
 				throw new ResourceConflictException(0L/*userRequest.getEmail()*/, "Email already exists");
 			}
 			User user = this.userService.createUser(userRequest);
@@ -95,8 +97,11 @@ public class AuthenticationController {
 		}
 		
 		@GetMapping("/validate/{id}/{uuid}")
-		public String validatePatient(@PathVariable("id") Long id, @PathVariable("uuid") String uuid) {
+		public ResponseEntity<String> validatePatient(@PathVariable("id") Long id, @PathVariable("uuid") String uuid, UriComponentsBuilder ucBuilder) {
 			boolean check = userService.validateUser(id, uuid);
-			return check ? "Validation succesfull, you can use your account now." : "Illegal invocation.";
+			HttpHeaders headers = new HttpHeaders();
+			headers.setLocation(ucBuilder.path("/certificates.html").build().toUri());
+			if(check) return new ResponseEntity<String>("Validation succesfull, you can use your account now.", headers, HttpStatus.TEMPORARY_REDIRECT);
+			else return new ResponseEntity<String>("Illegal invocation.", HttpStatus.I_AM_A_TEAPOT);
 		}
 }

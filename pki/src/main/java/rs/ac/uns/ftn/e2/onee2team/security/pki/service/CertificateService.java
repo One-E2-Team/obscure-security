@@ -165,7 +165,7 @@ public class CertificateService implements ICertificateService {
 		
 		X509Certificate x509 = buildX509Cert(c);
 		List<X509Certificate> certChain = null;
-		if(!c.getType().equals(CertificateType.ROOT)) {
+		if(c.getType().equals(CertificateType.INTERMEDIATE)) {
 			certChain = getCertificateChain(certificateRepository.findCurrentValidCertificateByIssuerAndSubjectCertDates(c.getIssuer(), c.getStartDate(), c.getEndDate()));
 		}
 		saveToKeyStore(x509, certChain, c.getType());
@@ -197,7 +197,10 @@ public class CertificateService implements ICertificateService {
 		}
 		
 		ksw.loadKeyStore(fileName, ks_pass.toCharArray());
-		ksw.write(x509.getSerialNumber().toString(), key.getPrivateKey(), ks_pass.toCharArray(), x509, certChain);
+		if(certType.equals(CertificateType.END))
+			ksw.writeEnd(x509.getSerialNumber().toString(), ks_pass.toCharArray(), x509);
+		else
+			ksw.write(x509.getSerialNumber().toString(), key.getPrivateKey(), ks_pass.toCharArray(), x509, certChain);
 		ksw.saveKeyStore(fileName, ks_pass.toCharArray());
 	}
 	

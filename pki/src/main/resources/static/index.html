@@ -44,6 +44,10 @@
             };
             xhttp.send(JSON.stringify(data));
         }
+
+        function register() {
+            window.location.href = '/register.html';
+        }
     </script>
 </head>
 
@@ -61,8 +65,10 @@
             <tr>
                 <td colspan="2" style="text-align: center;"><input type="button" onclick="login()" value="login" /></td>
             </tr>
+            <tr>
+                <td colspan="2" style="text-align: center;"><input type="button" onclick="register()" value="register" /></td>
+            </tr>
         </table>
-
     </div>
 </body>
 
