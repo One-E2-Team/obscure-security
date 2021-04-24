@@ -96,7 +96,7 @@ public class UserService implements IUserService {
 	@Override
 	public boolean validateUser(Long id, String uuid) {
 		User p = userRepository.findById(id).orElse(null);
-		if(p == null || p.isEnabled())
+		if(p == null || p.isEnabled() || p.getExpUUID().getTime() < new Date().getTime())
 			return false;
 		p.setEnabled(true);
 		p.setRequestUUID(null);
