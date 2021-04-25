@@ -104,4 +104,10 @@ public class UserService implements IUserService {
 		p = userRepository.saveAndFlush(p);
 		return p.isEnabled();
 	}
+
+	@Override
+	public List<User> getUsers(String text) {
+		List<User> aa= userRepository.getUsers(text);
+		return aa;
+	}
 }

@@ -48,6 +48,30 @@
         function register() {
             window.location.href = '/register.html';
         }
+
+        async function probaPOST() {
+            let xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    alert('Success');
+                }
+            };
+            xhttp.open("POST", "/api/users/probaPOST", true);
+            xhttp.setRequestHeader("Content-type", "application/json");
+            let text = document.getElementById("proba").value;
+            xhttp.send(text);
+        }
+        async function probaGET() {
+            let xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    alert('Success');
+                }
+            };
+            xhttp.open("GET", "/api/users/probaGET/" + document.getElementById("proba").value, true);
+            xhttp.setRequestHeader("Content-type", "application/json");
+            xhttp.send();
+        }
     </script>
 </head>
 
@@ -69,6 +93,9 @@
                 <td colspan="2" style="text-align: center;"><input type="button" onclick="register()" value="register" /></td>
             </tr>
         </table>
+        <input type="text" id="proba">
+        <input type="button" onclick="probaPOST()" value="POST">
+        <input type="button" onclick="probaGET()" value="GET">
     </div>
 </body>
 

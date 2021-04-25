@@ -5,10 +5,14 @@ import java.util.List;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.UserDTO;
+import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.User;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.service.IUserService;
 
 @RestController
@@ -25,5 +29,15 @@ public class UserController {
 	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')")
 	public List<UserDTO> allUsers() {
 		return userService.getAll();
+	}
+	
+	@PostMapping(value = "/probaPOST")
+	public List<User> getUsers(@RequestBody String text){
+		return userService.getUsers(text);
+	}
+	
+	@GetMapping(value = "/probaGET/{text}")
+	public List<User> getUserss(@PathVariable("text") String text){
+		return userService.getUsers(text);
 	}
 }
