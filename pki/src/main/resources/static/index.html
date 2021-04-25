@@ -30,7 +30,7 @@
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
                     sessionStorage.setItem("JWT", JSON.stringify(JSON.parse(this.response)));
-                    window.location.href = '/certificates.html'
+                    window.location.href = '/certificates.html';
                 }
             };
             xhttp.open("POST", "/api/auth/login", true);
@@ -48,6 +48,23 @@
         function register() {
             window.location.href = '/register.html';
         }
+
+        async function requestRecovery() {
+            let email = document.getElementById('username').value;
+            if (!email) {
+                alert('Enter your email!');
+                return;
+            }
+            let xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    alert('Check email and change password!');
+                }
+            };
+            xhttp.open("POST", "/api/users/request-recovery", true);
+            xhttp.setRequestHeader("Content-type", "application/json");
+            xhttp.send(email);
+        }
     </script>
 </head>
 
@@ -64,6 +81,9 @@
             </tr>
             <tr>
                 <td colspan="2" style="text-align: center;"><input type="button" onclick="login()" value="login" /></td>
+            </tr>
+            <tr>
+                <td colspan="2" style="text-align: center;"><input type="button" onclick="requestRecovery()" value="change password" /></td>
             </tr>
             <tr>
                 <td colspan="2" style="text-align: center;"><input type="button" onclick="register()" value="register" /></td>
