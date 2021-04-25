@@ -14,11 +14,8 @@ async function recovery() {
   };
   xhttp.open("PUT", "/api/users/recovery", true);
   xhttp.setRequestHeader("Content-type", "application/json");
-  let url = window.location.href;
-  let paramsUrl = url.split('?')[1];
-  let paramethers = paramsUrl.split('&');
-  let id = paramethers[0].split('=')[1];
-  let str = paramethers[1].split('=')[1];
+  let id = getUrlVars()['id']
+  let str = getUrlVars()['str']
   let encoder = new TextEncoder();
   let hash = await window.crypto.subtle.digest('SHA-512', encoder.encode(password));
   let hexPass = (Array.from(new Uint8Array(hash))).map(b => b.toString(16).padStart(2, '0')).join('');
