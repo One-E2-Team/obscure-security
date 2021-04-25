@@ -39,8 +39,7 @@ public class CertificateController extends ValidationController {
 	}
 	
 	@GetMapping(value = "/my")
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')" + "||"
-			+ "hasRole('ROLE_END_ENTITY')")
+	@PreAuthorize("hasAuthority('READ_CERT')")
 	public List<Certificate> allMyCertificates(Authentication auth) {
 		User user = (User) auth.getPrincipal();
 		return certificateService.allMyCertificates(user.getEmail());
@@ -53,7 +52,7 @@ public class CertificateController extends ValidationController {
 	}
 
 	@PostMapping(value = "/revoke/{num}")
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasAuthority('DELETE_CERT')")
 	public void revokeCertificate(@PathVariable("num") String serialNumber) {
 		certificateService.revoke(serialNumber);
 	}
@@ -66,7 +65,7 @@ public class CertificateController extends ValidationController {
 	}
 	
 	@PostMapping(value = "/create")
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')")
+	@PreAuthorize("hasAuthority('CREATE_CERT')")
 	public Certificate create(@Valid @RequestBody CreateCertificateDTO ccdto, Authentication auth) {
 		User user = (User) auth.getPrincipal();
 		if(certificateService.isIssuerValid(ccdto, user))
@@ -75,7 +74,7 @@ public class CertificateController extends ValidationController {
 	}
 	
 	@PostMapping(value = "/issuerpubkeys")
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')")
+	@PreAuthorize("hasAuthority('READ_PUBLIC_KEYS')")
 	public List<PublicKeysDTO> getPubKeys(@RequestBody String email) {
 		return certificateService.getAvailablePublicKeys(email);
 	}

@@ -30,7 +30,7 @@ public class UserController {
 	}
 
 	@GetMapping(value = "")
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')")
+	@PreAuthorize("hasAuthority('READ_USERS')")
 	public List<UserDTO> allUsers() {
 		return userService.getAll();
 	}
