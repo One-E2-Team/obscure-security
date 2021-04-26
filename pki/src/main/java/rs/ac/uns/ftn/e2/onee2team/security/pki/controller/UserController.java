@@ -45,10 +45,10 @@ public class UserController {
 	}
 
 	@PutMapping(value = "/recovery")
-	public String recovery(@RequestBody RecoveryDTO dto, UriComponentsBuilder ucBuilder) {
+	public ResponseEntity<String> recovery(@RequestBody RecoveryDTO dto, UriComponentsBuilder ucBuilder) {
 		if (userService.recovery(dto))
-			return "Recovery successful, you can login with new password.";
+			return new ResponseEntity<String>("Recovery successful, you can login with new password.", HttpStatus.OK);
 		else
-			return "Illegal invocation.";
+			return new ResponseEntity<String>( "Illegal invocation.", HttpStatus.I_AM_A_TEAPOT);
 	}
 }

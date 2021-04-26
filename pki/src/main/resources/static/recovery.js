@@ -10,6 +10,9 @@ async function recovery() {
     if (this.readyState == 4 && this.status == 200) {
       alert('Password successfully changed!');
       window.location.href = '/';
+    } else if (this.readyState == 4 && this.status == 418) {
+      alert('Bad request!');
+      return;
     }
   };
   xhttp.open("PUT", "/api/users/recovery", true);
