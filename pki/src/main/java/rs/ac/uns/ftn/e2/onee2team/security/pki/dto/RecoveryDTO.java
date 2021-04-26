@@ -1,9 +1,16 @@
 package rs.ac.uns.ftn.e2.onee2team.security.pki.dto;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
+
 public class RecoveryDTO {
 
 	private Long id;
+	
+	@NotBlank(message = "UUID cannot be empty.")
 	private String uuid;
+	
+	@Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[*.!@#$%^&(){}\\\\[\\\\]:;<>,.?~_+-=|\\\\/])[A-Za-z0-9*.!@#$%^&(){}\\\\[\\\\]:;<>,.?~_+-=|\\\\/]{8,}$")
 	private String password;
 
 	public RecoveryDTO(Long id, String uuid, String password) {

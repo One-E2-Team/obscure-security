@@ -3,6 +3,7 @@ package rs.ac.uns.ftn.e2.onee2team.security.pki.controller;
 import java.util.Collection;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -38,7 +39,7 @@ import rs.ac.uns.ftn.e2.onee2team.security.pki.service.IUserService;
 
 @RestController
 @RequestMapping(value = "/api/auth", produces = MediaType.APPLICATION_JSON_VALUE)
-public class AuthenticationController {
+public class AuthenticationController extends ValidationController {
 
 	@Autowired
 	private TokenUtils tokenUtils;
@@ -83,7 +84,7 @@ public class AuthenticationController {
 	
 	// Endpoint za registraciju novog korisnika
 		@PostMapping("/register")
-		public ResponseEntity<User> addUser(/*@Valid */@RequestBody UserRequestDTO userRequest, UriComponentsBuilder ucBuilder) {
+		public ResponseEntity<User> addUser(@Valid @RequestBody UserRequestDTO userRequest, UriComponentsBuilder ucBuilder) {
 
 			User existUser = this.userService.findByEmail(userRequest.getEmail());
 			if (existUser != null) {

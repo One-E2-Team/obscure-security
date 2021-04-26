@@ -46,7 +46,7 @@ public class CertificateController extends ValidationController {
 	}
 	
 	@GetMapping(value = "/user/{num}")
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')")
+	@PreAuthorize("hasAuthority('READ_USERS')")
 	public UserCommonNameDTO getUserBySerialNumber(@PathVariable("num") String serialNumber) {
 		return certificateService.findUserBySerialNumber(serialNumber);
 	}
@@ -58,8 +58,7 @@ public class CertificateController extends ValidationController {
 	}
 	
 	@GetMapping("/isRevoked/{num}")
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')" + "||"
-			+ "hasRole('ROLE_END_ENTITY')")
+	@PreAuthorize("hasAuthority('READ_CERT')")
 	public boolean isCertificateRevoke(@PathVariable("num") String serialNumber) {
 		return certificateService.isRevoked(serialNumber);
 	}
