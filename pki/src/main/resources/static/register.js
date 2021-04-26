@@ -14,8 +14,7 @@ async function register() {
     return;
   }
 
-  let mailRegex = new RegExp('([a-zA-Z0-9]+\.?)*[a-zA-Z0-9]@[a-z0-9]+(\.[a-z]{2,3})+');
-  if (!mailRegex.test(email)) {
+  if (!emailValidation(email)) {
     alert('Invalid mail!');
     return;
   }

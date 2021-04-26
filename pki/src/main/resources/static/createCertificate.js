@@ -9,12 +9,17 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 function createCertificate(issuerId) {
+  let commonName = document.getElementById("common-name").value;
+  if (!certificateCommonNameValidation(commonName)) {
+    alert("Common name contains characters thas are not allowed");
+    return;
+  }
   let request = {
     type: document.getElementById('type').value,
     startDate: document.getElementById('start-date').value,
     endDate: document.getElementById('end-date').value,
     email: document.getElementById('user').value,
-    commonName: document.getElementById("common-name").value,
+    commonName: commonName,
     publicKey: _getChosenPublicKey(),
     issuerSerialNumber: issuerId,
     extensions: getUsedExtensions()
@@ -69,7 +74,7 @@ async function _initializeExtensions() {
 
 async function _initializeParent() {
   const promise = new Promise((resolve) => {
-    let issuerId = _getIssuerIdFromURL();
+    let issuerId = _getIssuerId();
     if (issuerId == null)
       resolve(null);
     else {
@@ -240,11 +245,9 @@ function _removeElementFromList(list, item) {
   return list;
 }
 
-function _getIssuerIdFromURL() {
-  let url = window.location.href;
-  let paramsUrl = url.split('?')[1];
-  if (paramsUrl === undefined)
+function _getIssuerId() {
+  issuerId = getUrlVars()['serial-number']
+  if (issuerId === undefined)
     return null;
-  let params = paramsUrl.split('&')
-  return params[0].split('=')[1];
+  return issuerId
 }

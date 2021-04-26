@@ -33,25 +33,6 @@ function sendHTTPRequest(method, url, params) {
   return promise;
 }
 
-function passwordValidation(password, password2) {
-  if (!password || !password2) {
-    alert('Empty input!');
-    return false;
-  }
-
-  if (password !== password2) {
-    alert('Passwords are not same!');
-    return false;
-  }
-
-  let passRegex = new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[*.!@#$%^&(){}\\[\\]:;<>,.?~_+-=|\\/])[A-Za-z0-9*.!@#$%^&(){}\\[\\]:;<>,.?~_+-=|\\/]{8,}$');
-  if (!passRegex.test(password)) {
-    alert('Password must contain at least one lower, one capital letter, one number and one special character!\nPassword must have at least 8 characters!');
-    return false;
-  }
-  return true;
-}
-
 function getUrlVars() {
   var vars = {};
   var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
