@@ -1,4 +1,8 @@
 async function login() {
+  if (!emailValidation(document.getElementById("username").value)) {
+    alert('Invalid mail format!');
+    return;
+  }
   let xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
@@ -24,8 +28,8 @@ function register() {
 
 async function requestRecovery() {
   let email = document.getElementById('username').value;
-  if (!email) {
-    alert('Enter your email!');
+  if (!emailValidation(email)) {
+    alert('Invalid mail format!');
     return;
   }
   let xhttp = new XMLHttpRequest();

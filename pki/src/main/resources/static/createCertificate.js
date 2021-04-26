@@ -170,13 +170,31 @@ function _setElementVisibility(element, visible) {
 }
 
 function _showObjectToTextArea(object) {
-  let info = "";
-  if (object != null || object != undefined)
-    for (let property of Object.keys(object)) {
-      info += property + ": " + object[property] + "&#13;&#10;";
-    }
-  document.getElementById("ta-description").innerHTML = info;
+  document.getElementById("ta-description").innerHTML = _generateOutputFromObject(object);
 }
+
+function _generateOutputFromObject(object, childNumber = 0) {
+  let info = "";
+
+  if (object == undefined || object == null) return "";
+
+  for (let property of Object.keys(object)) {
+    if (typeof object[property] !== 'string' && Object.keys(object[property]).length > 0) {
+      info += insertWhiteSpaces(childNumber + 1) + property + ": " + "&#13;&#10;" + _generateOutputFromObject(object[property], childNumber + 1);
+      continue;
+    }
+    info += insertWhiteSpaces(childNumber) + property + ": " + object[property] + "&#13;&#10;";
+  }
+
+  return info;
+}
+
+function insertWhiteSpaces(numOfWhitespaces = 0) {
+  whitespaces = [];
+  while (numOfWhitespaces--) whitespaces.push("   ");
+  return whitespaces.join("");
+}
+
 
 function _selectRow(item) {
 

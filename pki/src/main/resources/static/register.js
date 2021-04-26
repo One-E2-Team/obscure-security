@@ -15,7 +15,7 @@ async function register() {
   }
 
   if (!emailValidation(email)) {
-    alert('Invalid mail!');
+    alert('Invalid mail format!');
     return;
   }
 
