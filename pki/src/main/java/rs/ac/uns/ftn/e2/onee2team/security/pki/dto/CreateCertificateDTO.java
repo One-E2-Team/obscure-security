@@ -1,8 +1,10 @@
 package rs.ac.uns.ftn.e2.onee2team.security.pki.dto;
 
 import java.util.Date;
+
 import java.util.List;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
@@ -21,6 +23,7 @@ public class CreateCertificateDTO {
 	private String commonName;
 	
 	@NotBlank(message = "Email cannot be empty.")
+	@Email(message = "Email is not valid.")
 	private String email;
 	
 	@NotNull(message = "Public key cannot be empty.")
@@ -30,6 +33,7 @@ public class CreateCertificateDTO {
 	
 	@NotNull(message = "Certificate type cannot be null.")
 	private CertificateType type;
+	
 	private List<CertificateExtension> extensions;
 	
 	public CreateCertificateDTO() {

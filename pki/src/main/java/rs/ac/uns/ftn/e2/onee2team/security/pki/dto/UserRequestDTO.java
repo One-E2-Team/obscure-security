@@ -1,26 +1,39 @@
 package rs.ac.uns.ftn.e2.onee2team.security.pki.dto;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.UserType;
 
 public class UserRequestDTO {
+	
 	@NotBlank(message = "Email cannot be empty.")
+	@Email(message = "Email is invalid.")
 	private String email;
 
 	@NotBlank(message = "Password cannot be empty.")
+	@Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[*.!@#$%^&(){}\\\\[\\\\]:;<>,.?~_+-=|\\\\/])[A-Za-z0-9*.!@#$%^&(){}\\\\[\\\\]:;<>,.?~_+-=|\\\\/]{8,}$")
+	@PasswordConstraint
 	private String password;
 	
+	@NotBlank(message = "Country cannot be empty.")
 	private String country;
 	
+	@NotBlank(message = "State cannot be empty.")
 	private String state;
 	
+	@NotBlank(message = "Locality cannot be empty.")
 	private String locality;
 	
+	@NotBlank(message = "Organization cannot be empty.")
 	private String organization;
 	
+	@NotBlank(message = "Organization unit cannot be empty.")
 	private String organizationalUnit;
 
+	@NotNull(message = "User type is mandatory!")
 	private UserType userType;
 
 	public UserType getUserType() {
