@@ -180,13 +180,13 @@ function _generateOutputFromObject(object, childNumber = 0) {
 
   for (let property of Object.keys(object)) {
     if (typeof object[property] !== 'string' && Object.keys(object[property]).length > 0) {
-      info += insertWhiteSpaces(childNumber + 1) + property + ": " + "&#13;&#10;" + _generateOutputFromObject(object[property], childNumber + 1);
+      info += insertWhiteSpaces(childNumber) + property + ": " + "&#13;&#10;" + _generateOutputFromObject(object[property], childNumber + 1);
       continue;
     }
     info += insertWhiteSpaces(childNumber) + property + ": " + object[property] + "&#13;&#10;";
   }
 
-  return info;
+  return removeTags(info);
 }
 
 function insertWhiteSpaces(numOfWhitespaces = 0) {
