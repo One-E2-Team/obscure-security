@@ -12,12 +12,12 @@ async function login() {
   };
   xhttp.open("POST", "/api/auth/login", true);
   xhttp.setRequestHeader("Content-type", "application/json");
-  let encoder = new TextEncoder();
+  /*let encoder = new TextEncoder();
   let hash = await window.crypto.subtle.digest('SHA-512', encoder.encode(document.getElementById("password").value));
-  let hexPass = (Array.from(new Uint8Array(hash))).map(b => b.toString(16).padStart(2, '0')).join('');
+  let hexPass = (Array.from(new Uint8Array(hash))).map(b => b.toString(16).padStart(2, '0')).join('');*/
   let data = {
     email: document.getElementById("username").value,
-    password: hexPass
+    password: document.getElementById("password").value
   };
   xhttp.send(JSON.stringify(data));
 }
