@@ -42,3 +42,27 @@ async function requestRecovery() {
   xhttp.setRequestHeader("Content-type", "application/json");
   xhttp.send(email);
 }
+
+async function probaPOST() {
+  let xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      alert('Success');
+    }
+  };
+  xhttp.open("POST", "/api/users/probaPOST", true);
+  xhttp.setRequestHeader("Content-type", "application/json");
+  let text = document.getElementById("proba").value;
+  xhttp.send(text);
+}
+async function probaGET() {
+  let xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      alert('Success');
+    }
+  };
+  xhttp.open("GET", "/api/users/probaGET/" + document.getElementById("proba").value, true);
+  xhttp.setRequestHeader("Content-type", "application/json");
+  xhttp.send();
+}
