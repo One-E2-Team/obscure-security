@@ -2,7 +2,8 @@ package rs.ac.uns.ftn.e2.onee2team.security.pki.controller;
 
 import java.util.List;
 
-import org.springframework.http.HttpHeaders;
+import javax.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +46,7 @@ public class UserController {
 	}
 
 	@PutMapping(value = "/recovery")
-	public ResponseEntity<String> recovery(@RequestBody RecoveryDTO dto, UriComponentsBuilder ucBuilder) {
+	public ResponseEntity<String> recovery(@Valid @RequestBody RecoveryDTO dto, UriComponentsBuilder ucBuilder) {
 		if (userService.recovery(dto))
 			return new ResponseEntity<String>("Recovery successful, you can login with new password.", HttpStatus.OK);
 		else

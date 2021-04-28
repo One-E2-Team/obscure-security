@@ -1,10 +1,12 @@
 package rs.ac.uns.ftn.e2.onee2team.security.pki.dto;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 public class RecoveryDTO {
 
+	@NotNull(message = "Id cannot be null.")
 	private Long id;
 	
 	@NotBlank(message = "UUID cannot be empty.")

@@ -38,6 +38,8 @@ async function requestRecovery() {
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
       alert('Check email and change password!');
+    } else if (this.readyState == 4 && this.status == 418) {
+      alert('Bad request!');
     }
   };
   xhttp.open("POST", "/api/users/request-recovery", true);

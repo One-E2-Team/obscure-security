@@ -1,7 +1,5 @@
 package rs.ac.uns.ftn.e2.onee2team.security.pki.controller;
 
-import java.util.Collection;
-
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
@@ -28,14 +26,10 @@ import rs.ac.uns.ftn.e2.onee2team.security.pki.auth.ResourceConflictException;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.auth.TokenUtils;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.auth.UserTokenState;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.UserRequestDTO;
-import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.EndEntity;
-import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.IntermediaryCA;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.User;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.UserType;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.service.IEmailNotificationService;
-import rs.ac.uns.ftn.e2.onee2team.security.pki.service.IKeyVaultService;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.service.IUserService;
-
 
 @RestController
 @RequestMapping(value = "/api/auth", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -46,27 +40,26 @@ public class AuthenticationController extends ValidationController {
 
 	@Autowired
 	private AuthenticationManager authenticationManager;
-	
+
 	@Autowired
 	private IUserService userService;
-	
-	//@Autowired
-	//private IKeyVaultService keyVaultService;
-	
+
+	// @Autowired
+	// private IKeyVaultService keyVaultService;
+
 	@Autowired
 	private IEmailNotificationService emailNotificationService;
-	
+
 	@Autowired
 	private PasswordEncoder passwordEncoder;
-	
-	@PostMapping("/login") 
-	public ResponseEntity<UserTokenState> createAuthenticationToken(@RequestBody JwtAuthenticationRequest authenticationRequest,
-			HttpServletResponse response) {
-		//keyVaultService.dothething();
-		// 
-		Authentication authentication = authenticationManager
-				.authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getEmail(),
-						authenticationRequest.getPassword()));
+
+	@PostMapping("/login")
+	public ResponseEntity<UserTokenState> createAuthenticationToken(
+			@RequestBody JwtAuthenticationRequest authenticationRequest, HttpServletResponse response) {
+		// keyVaultService.dothething();
+		//
+		Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+				authenticationRequest.getEmail(), authenticationRequest.getPassword()));
 
 		// Ubaci korisnika u trenutni security kontekst
 		SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -81,29 +74,47 @@ public class AuthenticationController extends ValidationController {
 		// Vrati token kao odgovor na uspesnu autentifikaciju
 		return ResponseEntity.ok(new UserTokenState(jwt, expiresIn, userType, email));
 	}
-	
-	// Endpoint za registraciju novog korisnika
-		@PostMapping("/register")
-		public ResponseEntity<User> addUser(@Valid @RequestBody UserRequestDTO userRequest, UriComponentsBuilder ucBuilder) {
 
-			User existUser = this.userService.findByEmail(userRequest.getEmail());
-			if (existUser != null) {
-				return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-				//throw new ResourceConflictException(0L/*userRequest.getEmail()*/, "Email already exists");
-			}
-			User user = this.userService.createUser(userRequest);
-			HttpHeaders headers = new HttpHeaders();
-			headers.setLocation(ucBuilder.path("/api/user/{userId}").buildAndExpand(user.getId()).toUri());
-			this.emailNotificationService.sendNotificationAsync(user.getEmail(), "Account Validation", "Visit this link in the next 20 minutes to validate your account: https://localhost/api/auth/validate/" + user.getId() + "/" + user.getRequestUUID());
-			return new ResponseEntity<>(user, HttpStatus.CREATED);
+	// Endpoint za registraciju novog korisnika
+	@PostMapping("/register")
+	public ResponseEntity<User> addUser(@Valid @RequestBody UserRequestDTO userRequest,
+			UriComponentsBuilder ucBuilder) {
+
+		User existUser = this.userService.findByEmail(userRequest.getEmail());
+		if (existUser != null) {
+			// return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+			throw new ResourceConflictException(0L/* userRequest.getEmail() */, "Email already exists");
 		}
-		
-		@GetMapping("/validate/{id}/{uuid}")
-		public ResponseEntity<String> validatePatient(@PathVariable("id") Long id, @PathVariable("uuid") String uuid, UriComponentsBuilder ucBuilder) {
-			boolean check = userService.validateUser(id, uuid);
-			HttpHeaders headers = new HttpHeaders();
-			headers.setLocation(ucBuilder.path("/certificates.html").build().toUri());
-			if(check) return new ResponseEntity<String>("Validation succesfull, you can use your account now.", headers, HttpStatus.TEMPORARY_REDIRECT);
-			else return new ResponseEntity<String>("Illegal invocation.", HttpStatus.I_AM_A_TEAPOT);
+		if (passwordContainsData(userRequest)) {
+			return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
 		}
+		User user = this.userService.createUser(userRequest);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setLocation(ucBuilder.path("/api/user/{userId}").buildAndExpand(user.getId()).toUri());
+		this.emailNotificationService.sendNotificationAsync(user.getEmail(), "Account Validation",
+				"Visit this link in the next 20 minutes to validate your account: https://localhost/api/auth/validate/"
+						+ user.getId() + "/" + user.getRequestUUID());
+		return new ResponseEntity<>(user, HttpStatus.CREATED);
+	}
+
+	@GetMapping("/validate/{id}/{uuid}")
+	public ResponseEntity<String> validatePatient(@PathVariable("id") Long id, @PathVariable("uuid") String uuid,
+			UriComponentsBuilder ucBuilder) {
+		boolean check = userService.validateUser(id, uuid);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setLocation(ucBuilder.path("/").build().toUri());
+		if (check)
+			return new ResponseEntity<String>("Validation succesfull, you can use your account now.", headers,
+					HttpStatus.TEMPORARY_REDIRECT);
+		else
+			return new ResponseEntity<String>("Illegal invocation.", HttpStatus.I_AM_A_TEAPOT);
+	}
+
+	private boolean passwordContainsData(UserRequestDTO dto) {
+		String passLower = dto.getPassword().toLowerCase();
+		return passLower.contains(dto.getCountry().toLowerCase()) || passLower.contains(dto.getLocality().toLowerCase())
+				|| passLower.contains(dto.getOrganization().toLowerCase())
+				|| passLower.contains(dto.getOrganizationalUnit().toLowerCase())
+				|| passLower.contains(dto.getState().toLowerCase());
+	}
 }

@@ -19,12 +19,14 @@ async function register() {
     return;
   }
 
-  if (!passwordValidation(password, password2)) {
+  let passLower = password.toLowerCase();
+  if (passLower.includes(country.toLowerCase()) || passLower.includes(state.toLowerCase()) || passLower.includes(locality.toLowerCase()) ||
+    passLower.includes(organization.toLowerCase()) || passLower.includes(organizationalUnit.toLowerCase())) {
+    alert('Password can\'t contain your personal data!');
     return;
   }
 
-  if (passwordEntersMostCommonPatern(password)) {
-    alert('Your password enters in most common password pattern. Please, enter different password.');
+  if (!passwordValidation(password, password2)) {
     return;
   }
 
@@ -33,6 +35,17 @@ async function register() {
     if (this.readyState == 4 && this.status == 201) {
       alert('Account successfully created!\nCheck email for validation.');
     } else if (this.readyState == 4 && this.status == 400) {
+      let message = '';
+      let errResponse = JSON.parse(this.response);
+      if (errResponse == null) {
+        alert('Password can\'t contain your personal data!');
+        return;
+      }
+      for (let item in errResponse) {
+        message += errResponse[item] + '\n';
+      }
+      alert(message);
+    } else if (this.readyState == 4 && this.status == 401) {
       alert('Email already exists!');
     }
   };

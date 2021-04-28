@@ -14,6 +14,12 @@ function passwordValidation(password, password2) {
     alert('Password must contain at least one lower, one capital letter, one number and one special character!\nPassword must have at least 8 characters!');
     return false;
   }
+
+  if (passwordEntersMostCommonPatern(password)) {
+    alert('Your password enters in most common password pattern. Please, enter different password.');
+    return false;
+  }
+
   return true;
 }
 

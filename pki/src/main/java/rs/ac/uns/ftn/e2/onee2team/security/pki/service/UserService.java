@@ -128,8 +128,8 @@ public class UserService implements IUserService {
 	@Override
 	public Boolean recovery(RecoveryDTO dto) {
 		User u = userRepository.findById(dto.getId()).orElse(null);
-		if (u == null || u.getExpUUID()==null || u.getExpUUID().getTime() < new Date().getTime() || !dto.getUuid().equals(u.getRequestUUID())
-				|| !u.isEnabled()) {
+		if (u == null || u.getExpUUID() == null || u.getExpUUID().getTime() < new Date().getTime()
+				|| !dto.getUuid().equals(u.getRequestUUID()) || !u.isEnabled()) {
 			return false;
 		}
 		u.setExpUUID(null);
