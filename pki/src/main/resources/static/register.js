@@ -23,6 +23,11 @@ async function register() {
     return;
   }
 
+  if (passwordEntersMostCommonPatern(password)) {
+    alert('Your password enters in most common password pattern. Please, enter different password.');
+    return;
+  }
+
   let xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 201) {
@@ -31,12 +36,12 @@ async function register() {
   };
   xhttp.open("POST", "/api/auth/register", true);
   xhttp.setRequestHeader("Content-type", "application/json");
-  let encoder = new TextEncoder();
+  /*let encoder = new TextEncoder();
   let hash = await window.crypto.subtle.digest('SHA-512', encoder.encode(password));
-  let hexPass = (Array.from(new Uint8Array(hash))).map(b => b.toString(16).padStart(2, '0')).join('');
+  let hexPass = (Array.from(new Uint8Array(hash))).map(b => b.toString(16).padStart(2, '0')).join('');*/
   let data = {
     email: email,
-    password: hexPass,
+    password: password,
     country: country,
     state: state,
     locality: locality,

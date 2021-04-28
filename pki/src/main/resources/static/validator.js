@@ -26,3 +26,8 @@ function certificateCommonNameValidation(commonName) {
   let regex = new RegExp('([a-zA-Z0-9]+\.?)*[a-zA-Z0-9]');
   return regex.test(commonName);
 }
+
+function passwordEntersMostCommonPatern(password) {
+  let regex = new RegExp(/^[A-Z][a-z]+[0-9]+[!@#$%^&*)(+=._-]+$/);
+  return regex.test(password);
+}

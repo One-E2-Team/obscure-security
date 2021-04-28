@@ -19,12 +19,13 @@ async function recovery() {
   xhttp.setRequestHeader("Content-type", "application/json");
   let id = getUrlVars()['id']
   let str = getUrlVars()['str']
-  let encoder = new TextEncoder();
-  let hash = await window.crypto.subtle.digest('SHA-512', encoder.encode(password));
-  let hexPass = (Array.from(new Uint8Array(hash))).map(b => b.toString(16).padStart(2, '0')).join('');
+    /*let encoder = new TextEncoder();
+    let hash = await window.crypto.subtle.digest('SHA-512', encoder.encode(password));
+    let hexPass = (Array.from(new Uint8Array(hash))).map(b => b.toString(16).padStart(2, '0')).join('');
+    */
   let data = {
     id: id,
-    password: hexPass,
+    password: password,
     uuid: str
   };
   xhttp.send(JSON.stringify(data));
