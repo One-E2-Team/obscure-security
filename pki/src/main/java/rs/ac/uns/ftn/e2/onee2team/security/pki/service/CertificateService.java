@@ -58,9 +58,9 @@ public class CertificateService implements ICertificateService {
 	private final Long INTERMEDIATE_MAX_VALUE = 157784760000L; // 5 years
 	private final Long END_ENTITY_MAX_VALUE = 63113904000L; // 2 years
 	
-	private final String ROOT_KS_FILE = "rootCertifikates.jks";
-	private final String INTERMEDIATE_KS_FILE = "intermediateCertifikates.jks";
-	private final String END_KS_FILE = "endCertifikates.jks";
+	private final String ROOT_KS_FILE = "C:/pki/rootCertificates.jks";
+	private final String INTERMEDIATE_KS_FILE = "C:/pki/intermediateCertificates.jks";
+	private final String END_KS_FILE = "C:/pki/endCertificates.jks";
 
 	@Autowired
 	public CertificateService(ICertificateRepository certificateRepository, IUserRepository userRepository, IKeyVaultRepository keyVaultRepository) {
@@ -185,15 +185,15 @@ public class CertificateService implements ICertificateService {
 		String ks_pass = "";
 		switch(certType) {
 		case ROOT:
-			fileName = "rootCertifikates.jks";
+			fileName = ROOT_KS_FILE;
 			ks_pass = System.getenv("ROOT_CERT_KS_PASSWORD");
 			break;
 		case INTERMEDIATE:
-			fileName = "intermediateCertifikates.jks";
+			fileName = INTERMEDIATE_KS_FILE;
 			ks_pass = System.getenv("INTERMEDIATE_CERT_KS_PASSWORD");
 			break;
 		case END:
-			fileName = "endCertifikates.jks";
+			fileName = END_KS_FILE;
 			ks_pass = System.getenv("END_CERT_KS_PASSWORD");
 			break;
 		default:
