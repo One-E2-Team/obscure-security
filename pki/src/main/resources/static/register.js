@@ -32,6 +32,8 @@ async function register() {
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 201) {
       alert('Account successfully created!\nCheck email for validation.');
+    } else if (this.readyState == 4 && this.status == 400) {
+      alert('Email already exists!');
     }
   };
   xhttp.open("POST", "/api/auth/register", true);

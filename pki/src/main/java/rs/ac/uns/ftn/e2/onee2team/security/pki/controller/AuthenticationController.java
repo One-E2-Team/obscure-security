@@ -88,7 +88,8 @@ public class AuthenticationController extends ValidationController {
 
 			User existUser = this.userService.findByEmail(userRequest.getEmail());
 			if (existUser != null) {
-				throw new ResourceConflictException(0L/*userRequest.getEmail()*/, "Email already exists");
+				return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+				//throw new ResourceConflictException(0L/*userRequest.getEmail()*/, "Email already exists");
 			}
 			User user = this.userService.createUser(userRequest);
 			HttpHeaders headers = new HttpHeaders();

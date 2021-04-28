@@ -8,6 +8,8 @@ async function login() {
     if (this.readyState == 4 && this.status == 200) {
       sessionStorage.setItem("JWT", JSON.stringify(JSON.parse(this.response)));
       window.location.href = '/certificates.html';
+    } else if (this.readyState == 4 && this.status == 401) {
+      alert('Email doesn\'t exist or isn\'t validated!');
     }
   };
   xhttp.open("POST", "/api/auth/login", true);
