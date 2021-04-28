@@ -39,34 +39,32 @@ public class CertificateController extends ValidationController {
 	}
 	
 	@GetMapping(value = "/my")
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')" + "||"
-			+ "hasRole('ROLE_END_ENTITY')")
+	@PreAuthorize("hasAuthority('READ_CERT')")
 	public List<Certificate> allMyCertificates(Authentication auth) {
 		User user = (User) auth.getPrincipal();
 		return certificateService.allMyCertificates(user.getEmail());
 	}
 	
 	@GetMapping(value = "/user/{num}")
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')")
+	@PreAuthorize("hasAuthority('READ_USERS')")
 	public UserCommonNameDTO getUserBySerialNumber(@PathVariable("num") String serialNumber) {
 		return certificateService.findUserBySerialNumber(serialNumber);
 	}
 
 	@PostMapping(value = "/revoke/{num}")
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasAuthority('DELETE_CERT')")
 	public void revokeCertificate(@PathVariable("num") String serialNumber) {
 		certificateService.revoke(serialNumber);
 	}
 	
 	@GetMapping("/isRevoked/{num}")
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')" + "||"
-			+ "hasRole('ROLE_END_ENTITY')")
+	@PreAuthorize("hasAuthority('READ_CERT')")
 	public boolean isCertificateRevoke(@PathVariable("num") String serialNumber) {
 		return certificateService.isRevoked(serialNumber);
 	}
 	
 	@PostMapping(value = "/create")
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')")
+	@PreAuthorize("hasAuthority('CREATE_CERT')")
 	public Certificate create(@Valid @RequestBody CreateCertificateDTO ccdto, Authentication auth) {
 		User user = (User) auth.getPrincipal();
 		if(certificateService.isIssuerValid(ccdto, user))
@@ -75,7 +73,7 @@ public class CertificateController extends ValidationController {
 	}
 	
 	@PostMapping(value = "/issuerpubkeys")
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')")
+	@PreAuthorize("hasAuthority('READ_PUBLIC_KEYS')")
 	public List<PublicKeysDTO> getPubKeys(@RequestBody String email) {
 		return certificateService.getAvailablePublicKeys(email);
 	}

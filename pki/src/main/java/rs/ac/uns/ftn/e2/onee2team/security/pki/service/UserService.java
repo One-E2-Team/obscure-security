@@ -11,11 +11,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.RecoveryDTO;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.UserDTO;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.UserRequestDTO;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.Certificate;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.certificate.UserDefinedSubject;
-import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.Authority;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.EndEntity;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.IntermediaryCA;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.User;
@@ -29,13 +29,16 @@ public class UserService implements IUserService {
 	private PasswordEncoder passwordEncoder;
 	private IUserRepository userRepository;
 	private IAuthorityService authorityService;
-	
+	private IEmailNotificationService emailNotificationService;
+
 	@Autowired
-	public UserService(IUserRepository userRepository, IAuthorityService authorityService) {
+	public UserService(IUserRepository userRepository, IAuthorityService authorityService,
+			IEmailNotificationService emailNotificationService) {
 		this.userRepository = userRepository;
 		this.authorityService = authorityService;
+		this.emailNotificationService = emailNotificationService;
 	}
-	
+
 	@Override
 	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 		User user = userRepository.findByEmail(email);
@@ -50,10 +53,10 @@ public class UserService implements IUserService {
 	public User findByEmail(String email) {
 		return userRepository.findByEmail(email);
 	}
-	
+
 	@Override
-	public List<UserDTO> getAll(){
-		List<User> users =  userRepository.findAll();
+	public List<UserDTO> getAll() {
+		List<User> users = userRepository.findAll();
 		List<UserDTO> ret_list = new ArrayList<UserDTO>();
 		UserDTO dto;
 		for (User u : users) {
@@ -66,24 +69,25 @@ public class UserService implements IUserService {
 	@Override
 	public User createUser(UserRequestDTO userRequest) {
 		User ret = null;
-		if(userRequest.getUserType().equals(UserType.INTERMEDIARY_CA)) {
+		if (userRequest.getUserType().equals(UserType.INTERMEDIARY_CA)) {
 			IntermediaryCA u = new IntermediaryCA();
 			u.setUserType(UserType.INTERMEDIARY_CA);
-			u.setCertificates((List<Certificate>)(new ArrayList<Certificate>()));
+			u.setCertificates((List<Certificate>) (new ArrayList<Certificate>()));
 			u.setAuthorities(authorityService.findByname("ROLE_INTERMEDIARY_CA"));
 			ret = u;
-		} else if(userRequest.getUserType().equals(UserType.END_ENTITY)) {
+		} else if (userRequest.getUserType().equals(UserType.END_ENTITY)) {
 			EndEntity u = new EndEntity();
 			u.setUserType(UserType.END_ENTITY);
-			u.setCertificates((List<Certificate>)(new ArrayList<Certificate>()));
+			u.setCertificates((List<Certificate>) (new ArrayList<Certificate>()));
 			u.setAuthorities(authorityService.findByname("ROLE_END_ENTITY"));
 			ret = u;
-		} else return null;
+		} else
+			return null;
 		ret.setEmail(userRequest.getEmail());
 		ret.setEnabled(false);
 		ret.setPassword(passwordEncoder.encode(userRequest.getPassword()));
 		ret.setRequestUUID(UUID.randomUUID().toString());
-		ret.setExpUUID(new Date((new Date()).getTime() + 1200000L)); //20mins
+		ret.setExpUUID(new Date((new Date()).getTime() + 1200000L)); // 20mins
 		ret.setUserSubject(new UserDefinedSubject());
 		ret.getUserSubject().setCountry(userRequest.getCountry());
 		ret.getUserSubject().setLocality(userRequest.getLocality());
@@ -96,7 +100,8 @@ public class UserService implements IUserService {
 	@Override
 	public boolean validateUser(Long id, String uuid) {
 		User p = userRepository.findById(id).orElse(null);
-		if(p == null || p.isEnabled() || p.getExpUUID().getTime() < new Date().getTime())
+		if (p == null || p.isEnabled() || p.getExpUUID().getTime() < new Date().getTime()
+				|| !uuid.equals(p.getRequestUUID()))
 			return false;
 		p.setEnabled(true);
 		p.setRequestUUID(null);
@@ -109,5 +114,34 @@ public class UserService implements IUserService {
 	public List<User> getUsers(String text) {
 		List<User> aa= userRepository.getUsers(text);
 		return aa;
+	}
+
+	@Override
+	public Boolean requestRecovery(String email) {
+		User u = userRepository.findByEmail(email);
+		if (u == null) {
+			return false;
+		}
+		u.setRequestUUID(UUID.randomUUID().toString());
+		u.setExpUUID(new Date((new Date()).getTime() + 1200000L)); // 20mins
+		emailNotificationService.sendNotificationAsync(email, "Account recovery",
+				"Visit this link in the next 20 minutes to change your password: https://localhost/recovery.html?id="
+						+ u.getId() + "&str=" + u.getRequestUUID());
+		userRepository.saveAndFlush(u);
+		return true;
+	}
+
+	@Override
+	public Boolean recovery(RecoveryDTO dto) {
+		User u = userRepository.findById(dto.getId()).orElse(null);
+		if (u == null || u.getExpUUID()==null || u.getExpUUID().getTime() < new Date().getTime() || !dto.getUuid().equals(u.getRequestUUID())
+				|| !u.isEnabled()) {
+			return false;
+		}
+		u.setExpUUID(null);
+		u.setRequestUUID(null);
+		u.setPassword(passwordEncoder.encode(dto.getPassword()));
+		userRepository.saveAndFlush(u);
+		return true;
 	}
 }

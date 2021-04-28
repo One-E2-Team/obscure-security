@@ -9,12 +9,17 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 function createCertificate(issuerId) {
+  let commonName = document.getElementById("common-name").value;
+  if (!certificateCommonNameValidation(commonName)) {
+    alert("Common name contains characters thas are not allowed");
+    return;
+  }
   let request = {
     type: document.getElementById('type').value,
     startDate: document.getElementById('start-date').value,
     endDate: document.getElementById('end-date').value,
     email: document.getElementById('user').value,
-    commonName: document.getElementById("common-name").value,
+    commonName: commonName,
     publicKey: _getChosenPublicKey(),
     issuerSerialNumber: issuerId,
     extensions: getUsedExtensions()
@@ -69,7 +74,7 @@ async function _initializeExtensions() {
 
 async function _initializeParent() {
   const promise = new Promise((resolve) => {
-    let issuerId = _getIssuerIdFromURL();
+    let issuerId = _getIssuerId();
     if (issuerId == null)
       resolve(null);
     else {
@@ -165,13 +170,31 @@ function _setElementVisibility(element, visible) {
 }
 
 function _showObjectToTextArea(object) {
-  let info = "";
-  if (object != null || object != undefined)
-    for (let property of Object.keys(object)) {
-      info += property + ": " + object[property] + "&#13;&#10;";
-    }
-  document.getElementById("ta-description").innerHTML = info;
+  document.getElementById("ta-description").innerHTML = _generateOutputFromObject(object);
 }
+
+function _generateOutputFromObject(object, childNumber = 0) {
+  let info = "";
+
+  if (object == undefined || object == null) return "";
+
+  for (let property of Object.keys(object)) {
+    if (typeof object[property] !== 'string' && Object.keys(object[property]).length > 0) {
+      info += insertWhiteSpaces(childNumber) + property + ": " + "&#13;&#10;" + _generateOutputFromObject(object[property], childNumber + 1);
+      continue;
+    }
+    info += insertWhiteSpaces(childNumber) + property + ": " + object[property] + "&#13;&#10;";
+  }
+
+  return removeTags(info);
+}
+
+function insertWhiteSpaces(numOfWhitespaces = 0) {
+  whitespaces = [];
+  while (numOfWhitespaces--) whitespaces.push("   ");
+  return whitespaces.join("");
+}
+
 
 function _selectRow(item) {
 
@@ -240,11 +263,9 @@ function _removeElementFromList(list, item) {
   return list;
 }
 
-function _getIssuerIdFromURL() {
-  let url = window.location.href;
-  let paramsUrl = url.split('?')[1];
-  if (paramsUrl === undefined)
+function _getIssuerId() {
+  issuerId = getUrlVars()['serial-number']
+  if (issuerId === undefined)
     return null;
-  let params = paramsUrl.split('&')
-  return params[0].split('=')[1];
+  return issuerId
 }

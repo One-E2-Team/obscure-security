@@ -24,7 +24,7 @@ public class ExtensionController {
 	}
 	
 	@GetMapping
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')")
+	@PreAuthorize("hasAuthority('READ_EXTENSIONS')")
 	public List<AvailableExtension> getAll(){
 		return extensionService.getAll();
 	}

@@ -1,5 +1,6 @@
 package rs.ac.uns.ftn.e2.onee2team.security.pki.model.users;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -121,7 +122,17 @@ public abstract class User implements UserDetails {
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return this.authorities;
+		List<GrantedAuthority> usersAuthorities = new ArrayList<GrantedAuthority>();
+		usersAuthorities.addAll(this.authorities);
+		
+		for(Authority a : this.authorities) {
+			List<Permission> permissions = a.getPermissions();
+			for(Permission p : permissions) {
+				usersAuthorities.add(p);
+			}
+		}
+		
+		return usersAuthorities;
 	}
 	
 	@JsonIgnore

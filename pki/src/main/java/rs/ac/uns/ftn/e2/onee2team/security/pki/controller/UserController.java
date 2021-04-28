@@ -2,15 +2,21 @@ package rs.ac.uns.ftn.e2.onee2team.security.pki.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.RecoveryDTO;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.dto.UserDTO;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.model.users.User;
 import rs.ac.uns.ftn.e2.onee2team.security.pki.service.IUserService;
@@ -20,13 +26,13 @@ import rs.ac.uns.ftn.e2.onee2team.security.pki.service.IUserService;
 public class UserController {
 
 	private IUserService userService;
-	
+
 	public UserController(IUserService userService) {
 		this.userService = userService;
 	}
-	
+
 	@GetMapping(value = "")
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')" + "||" + "hasRole('ROLE_INTERMEDIARY_CA')")
+	@PreAuthorize("hasAuthority('READ_USERS')")
 	public List<UserDTO> allUsers() {
 		return userService.getAll();
 	}
@@ -39,5 +45,22 @@ public class UserController {
 	@GetMapping(value = "/probaGET/{text}")
 	public List<User> getUserss(@PathVariable("text") String text){
 		return userService.getUsers(text);
+	}
+
+	@PostMapping(value = "/request-recovery")
+	public ResponseEntity<String> requestRecovery(@RequestBody String email) {
+		Boolean check =  userService.requestRecovery(email);
+		if(check)
+			return new ResponseEntity<String>("Successful request. Check email!", HttpStatus.OK);
+		else
+			return new ResponseEntity<String>("Bad email.", HttpStatus.I_AM_A_TEAPOT);
+	}
+
+	@PutMapping(value = "/recovery")
+	public ResponseEntity<String> recovery(@RequestBody RecoveryDTO dto, UriComponentsBuilder ucBuilder) {
+		if (userService.recovery(dto))
+			return new ResponseEntity<String>("Recovery successful, you can login with new password.", HttpStatus.OK);
+		else
+			return new ResponseEntity<String>( "Illegal invocation.", HttpStatus.I_AM_A_TEAPOT);
 	}
 }

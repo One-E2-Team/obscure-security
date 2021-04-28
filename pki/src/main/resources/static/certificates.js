@@ -15,7 +15,7 @@ async function startupFunction() {
 
 
 function populateCertificates(certificates) {
-  if (getRole() === 'ADMINISTRATOR') {
+  if (getRole() === 'ADMINISTRATOR' || getRole() === 'INTERMEDIARY_CA') {
     document.getElementById('add-new').style.display = 'block';
   } else {
     document.getElementById('add-new').style.display = 'none';
