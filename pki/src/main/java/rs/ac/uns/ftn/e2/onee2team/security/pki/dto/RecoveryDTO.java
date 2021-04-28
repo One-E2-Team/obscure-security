@@ -11,6 +11,7 @@ public class RecoveryDTO {
 	private String uuid;
 	
 	@Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[*.!@#$%^&(){}\\\\[\\\\]:;<>,.?~_+-=|\\\\/])[A-Za-z0-9*.!@#$%^&(){}\\\\[\\\\]:;<>,.?~_+-=|\\\\/]{8,}$")
+	@PasswordConstraint
 	private String password;
 
 	public RecoveryDTO(Long id, String uuid, String password) {
