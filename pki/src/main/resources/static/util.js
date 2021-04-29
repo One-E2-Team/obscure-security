@@ -3,7 +3,11 @@ function getJWTToken() {
 }
 
 function getRole() {
-  return String(JSON.parse(sessionStorage.getItem('JWT')).userType);
+  let token = JSON.parse(sessionStorage.getItem('JWT'));
+  if (token !== null) {
+    return String(JSON.parse(sessionStorage.getItem('JWT')).userType);
+  }
+  return null;
 }
 
 function dateToDDMMYYYY(dateString) {

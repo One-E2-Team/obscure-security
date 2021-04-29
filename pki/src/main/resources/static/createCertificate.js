@@ -3,6 +3,14 @@ var pubKey = {}
 var users = []
 
 document.addEventListener("DOMContentLoaded", function() {
+  if (getRole() !== null && (getRole() === 'ADMINISTRATOR' || getRole() === 'INTERMEDIARY_CA')) {
+    document.getElementById('main-div').style.display = 'block';
+    document.getElementById('error-div').style.display = 'none';
+  } else {
+    document.getElementById('main-div').style.display = 'none';
+    document.getElementById('error-div').style.display = 'block';
+    return;
+  }
   _initializeExtensions();
   _initializeUsers();
   _initializeParent().then(issuerId => document.getElementById("create-btn").addEventListener("click", function() { createCertificate(issuerId) }));
