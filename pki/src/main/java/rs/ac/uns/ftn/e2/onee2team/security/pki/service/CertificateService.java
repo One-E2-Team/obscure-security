@@ -1,5 +1,6 @@
 package rs.ac.uns.ftn.e2.onee2team.security.pki.service;
 
+import java.io.IOException;
 import java.math.BigInteger;
 
 import java.security.KeyPair;
@@ -15,6 +16,9 @@ import java.util.UUID;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.GeneralNamesBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -161,7 +165,7 @@ public class CertificateService implements ICertificateService {
 			c.setPublicKey(kv.getPublicKey());
 		} else return null;
 		
-		certificateRepository.save(c);
+		c = certificateRepository.save(c);
 		
 		X509Certificate x509 = buildX509Cert(c);
 		List<X509Certificate> certChain = null;
@@ -219,6 +223,11 @@ public class CertificateService implements ICertificateService {
 		}
 		
 		return ret;
+	}
+	
+	private X509Certificate getCertificate(String ssn) {
+		List<X509Certificate> ret = getCertificateChain(certificateRepository.findBySerialNumber(ssn));
+		return ret.get(ret.size()-1);
 	}
 
 	@Override
@@ -348,12 +357,43 @@ public class CertificateService implements ICertificateService {
 	    
 	    issuerData = new IssuerData(isssuerkv.getPrivateKey(), builder.build());
 	    
-		X509Certificate ret = cg.generateCertificate(subjectData, issuerData, new ArrayList<ExtensionFormat>());
+	    ArrayList<ExtensionFormat> ef = new ArrayList<ExtensionFormat>();
+	    for (CertificateExtension ce : cert.getExtensions()) {
+	    	if(!ce.getField().getName().equals("Subject alternative name")) continue;
+	    	List<GeneralName> gn = new ArrayList<GeneralName>();
+			ExtensionFormat temp = new ExtensionFormat();
+			temp.setCritical(false);
+			temp.setField(new ASN1ObjectIdentifier("2.5.29.17"));
+			for(String line : ce.getValue().split("\\r?\\n")){
+				String[] keyval = line.split("=");
+				if(keyval[0].toLowerCase().contains("ip"))
+					gn.add(new GeneralName(GeneralName.iPAddress, keyval[1]));
+				else if (keyval[0].toLowerCase().contains("dns"))
+					gn.add(new GeneralName(GeneralName.dNSName, keyval[1]));
+			}
+			GeneralNamesBuilder gnsbuilder = new GeneralNamesBuilder();
+			for (GeneralName generalName : gn) {
+				gnsbuilder.addName(generalName);
+			}
+			GeneralNames gns = gnsbuilder.build();
+			try {
+				temp.setValue(gns.getEncoded());
+			} catch (IOException e) {
+				System.out.println("yolo");
+				e.printStackTrace();
+			}
+			ef.add(temp);
+		}
+	    
+		X509Certificate ret = cg.generateCertificate(subjectData, issuerData, ef);
 		
 		return ret;
 	}
 
 	private X509Certificate buildX509Cert(String ssn) {
+		return getCertificate(ssn);
+		
+		/*
 		Certificate cert = certificateRepository.findBySerialNumber(ssn);
 		Certificate issuerCert = certificateRepository.findCurrentValidCertificateByIssuerAndSubjectCertDates(cert.getIssuer(), cert.getStartDate(), cert.getEndDate());
 		KeyVault isssuerkv = keyVaultRepository.findByPublicKey(issuerCert.getPublicKey());
@@ -390,6 +430,6 @@ public class CertificateService implements ICertificateService {
 	    CertificateGenerator cg = new CertificateGenerator();
 		X509Certificate ret = cg.generateCertificate(subjectData, issuerData, ef);
 		
-		return ret;
+		return ret;*/
 	}
 }
