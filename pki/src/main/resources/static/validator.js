@@ -9,7 +9,7 @@ function passwordValidation(password, password2) {
     return false;
   }
 
-  let passRegex = new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[*.!@#$%^&(){}\\[\\]:;<>,.?~_+-=|\\/])[A-Za-z0-9*.!@#$%^&(){}\\[\\]:;<>,.?~_+-=|\\/]{8,}$');
+  let passRegex = new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[*.!@#$%^&(){}\\[\\]:;<>,.?~_+\\-=|\\/])[A-Za-z0-9*.!@#$%^&(){}\\[\\]:;<>,.?~_+\\-=|\\/]{8,}$');
   if (!passRegex.test(password)) {
     alert('Password must contain at least one lower, one capital letter, one number and one special character!\nPassword must have at least 8 characters!');
     return false;
